@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>کوییز داکسور</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  body { font-family: Tahoma, sans-serif; background:#0d0d0d; color:#fff; text-align:center; margin:0; padding:20px; }
+  .option { display:block; width:100%; max-width:320px; margin:8px auto; padding:14px; border:none; border-radius:10px; background:#242424; color:#fff; font-size:16px; cursor:pointer; }
+  .option.correct { background:#2ecc71; }
+  .option.wrong { background:#e74c3c; }
+  #score { font-size:22px; margin-top:20px; }
+  #restart { margin-top:20px; padding:12px 24px; border:none; border-radius:10px; background:#c0392b; color:#fff; font-size:16px; }
+  h3 { color:#999; }
+  p { font-size:20px; margin:20px 0; }
+</style>
+</head>
+<body>
+
+<div id="quiz"></div>
+
+<script>
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
+
+const allQuestions = [
+  { question: "جنگ جهانی دوم در چه سالی آغاز شد؟", options: ["۱۹۳۵", "۱۹۳۹", "۱۹۴۱", "۱۹۴۵"], correct: 1 },
+  { question: "کدام کشور اولین بمب اتمی را در جنگ استفاده کرد؟", options: ["شوروی", "آلمان", "آمریکا", "انگلیس"], correct: 2 },
+  { question: "تانک تیگر (Tiger) متعلق به کدام کشور بود؟", options: ["آلمان", "آمریکا", "شوروی", "فرانسه"], correct: 0 },
+  { question: "دکترین بلیتزکریگ (جنگ رعدآسا) اولین بار توسط چه کشوری اجرا شد؟", options: ["آمریکا", "آلمان نازی", "ژاپن", "ایتالیا"], correct: 1 },
+  { question: "جنگنده اف-۲۲ رپتور محصول کدام کشور است؟", options: ["روسیه", "چین", "آمریکا", "فرانسه"], correct: 2 },
+  { question: "کدام جنگ به «جنگ سرد» معروف است؟", options: ["ایران و عراق", "آمریکا و شوروی", "کره شمالی و جنوبی", "ویتنام و فرانسه"], correct: 1 },
+  { question: "موشک اسکاد ابتدا توسط کدام کشور توسعه یافت؟", options: ["شوروی", "آمریکا", "چین", "آلمان"], correct: 0 },
+  { question: "ناوهواپیمابر نیمیتز متعلق به نیروی دریایی کدام کشور است؟", options: ["روسیه", "آمریکا", "چین", "بریتانیا"], correct: 1 }
+];
+
+const QUESTIONS_PER_GAME = 5;
+
+let questions = [];
+let current = 0;
+let score = 0;
+
+function shuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startGame() {
+  questions = shuffle(allQuestions).slice(0, QUESTIONS_PER_GAME);
+  current = 0;
+  score = 0;
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[current];
+  const container = document.getElementById('quiz');
+  container.innerHTML = `
+    <h3>سوال ${current + 1} از ${questions.length}</h3>
+    <p>${q.question}</p>
+    ${q.options.map((opt, i) => `<button class="option" onclick="checkAnswer(${i})">${opt}</button>`).join('')}
+  `;
+}
+
+function checkAnswer(index) {
+  const q = questions[current];
+  const buttons = document.querySelectorAll('.option');
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === index) btn.classList.add('wrong');
+  });
+
+  if (index === q.correct) score++;
+
+  setTimeout(() => {
+    current++;
+    if (current < questions.length) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  }, 1000);
+}
+
+function showResult() {
+  document.getElementById('quiz').innerHTML = `
+    <div id="score">امتیاز شما: ${score} از ${questions.length}</div>
+    <button id="restart" onclick="startGame()">شروع دوباره</button>
+  `;
+}
+
+startGame();
+</script>
+</body>
+</html>
