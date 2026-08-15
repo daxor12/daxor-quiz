@@ -2,100 +2,531 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>کوییز داکسور</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DAXOR Military Quiz</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  body { font-family: Tahoma, sans-serif; background:#0d0d0d; color:#fff; text-align:center; margin:0; padding:20px; }
-  .option { display:block; width:100%; max-width:320px; margin:8px auto; padding:14px; border:none; border-radius:10px; background:#242424; color:#fff; font-size:16px; cursor:pointer; }
-  .option.correct { background:#2ecc71; }
-  .option.wrong { background:#e74c3c; }
-  #score { font-size:22px; margin-top:20px; }
-  #restart { margin-top:20px; padding:12px 24px; border:none; border-radius:10px; background:#c0392b; color:#fff; font-size:16px; }
-  h3 { color:#999; }
-  p { font-size:20px; margin:20px 0; }
+  @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap");
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Vazirmatn", sans-serif;
+    background: #08080a;
+    color: #f5f5f5;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: radial-gradient(ellipse 420px 260px at 20% -10%, rgba(196,30,30,0.12), transparent 60%), #08080a;
+    padding: 20px 18px 30px;
+    position: relative;
+  }
+  .screen { display: none; flex-direction: column; min-height: calc(100vh - 50px); }
+  .screen.active { display: flex; }
+
+  /* ---- shared ---- */
+  .center-flex { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:6px; }
+  .btn { border: none; border-radius: 15px; padding: 15px; font-family: inherit; font-weight: 700; font-size: 13.5px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
+  .btn-primary { background: linear-gradient(135deg, #f13c3c, #a31818); color:#fff; box-shadow: 0 12px 26px rgba(196,30,30,0.35); }
+  .btn-secondary { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color:#ccc; }
+  .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px; }
+  .brand-mini { display:flex; align-items:center; gap:8px; }
+  .brand-mini img { width:26px; height:26px; border-radius:50%; border:1px solid rgba(196,30,30,0.5); }
+  .brand-mini span { font-size:10.5px; color:#888; font-weight:700; letter-spacing:1px; }
+
+  /* ---- loading ---- */
+  .loading-logo { width:70px; height:70px; border-radius:50%; overflow:hidden; border:2px solid rgba(196,30,30,0.5); box-shadow:0 0 30px rgba(196,30,30,0.3); }
+  .loading-logo img { width:100%; height:100%; object-fit:cover; }
+  .spinner { width:34px; height:34px; border-radius:50%; border:3px solid #232228; border-top-color:#e83030; animation: spin 0.9s linear infinite; margin-top: 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size:12px; color:#75757c; letter-spacing:1px; margin-top: 14px; }
+
+  /* ---- force join ---- */
+  .fj-icon { width:76px; height:76px; border-radius:22px; margin:10px auto 0; background: linear-gradient(135deg, rgba(196,30,30,0.22), rgba(196,30,30,0.05)); border:1px solid rgba(196,30,30,0.35); display:flex; align-items:center; justify-content:center; }
+  .fj-title { text-align:center; font-size:17px; font-weight:800; margin-top:18px; }
+  .fj-desc { text-align:center; font-size:12px; color:#8a8a8f; margin-top:8px; line-height:1.9; padding:0 12px; }
+  .fj-channel-card { margin-top:22px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px; display:flex; align-items:center; gap:12px; }
+  .fj-channel-card img { width:44px; height:44px; border-radius:50%; }
+  .fj-channel-card .cn { font-size:13px; font-weight:700; }
+  .fj-channel-card .cs { font-size:10.5px; color:#75757c; margin-top:2px; }
+
+  /* ---- cooldown ---- */
+  .cd-icon { width:90px; height:90px; margin:10px auto 0; position:relative; }
+  .cd-icon svg { transform: rotate(-90deg); }
+  .cd-ring-bg { stroke:#1a191e; }
+  .cd-ring-fg { stroke:#e83030; stroke-linecap:round; transition: stroke-dashoffset 1s linear; }
+  .cd-title { text-align:center; font-size:16px; font-weight:800; margin-top:16px; }
+  .cd-timer { text-align:center; font-size:30px; font-weight:900; margin-top:10px; letter-spacing:1px; direction:ltr; color:#ff6b6b; }
+  .cd-desc { text-align:center; font-size:11.5px; color:#75757c; margin-top:6px; }
+
+  /* ---- home ---- */
+  .home-top { display:flex; align-items:center; justify-content:space-between; }
+  .greet { display:flex; align-items:center; gap:11px; }
+  .avatar { width:44px; height:44px; border-radius:14px; overflow:hidden; border:1.5px solid rgba(196,30,30,0.5); }
+  .avatar img { width:100%; height:100%; object-fit:cover; }
+  .greet-text .hi { font-size:11.5px; color:#75757c; font-weight:500; }
+  .greet-text .name { font-size:15.5px; font-weight:800; margin-top:1px; }
+  .rank-card { margin-top:20px; border-radius:22px; padding:20px; background: linear-gradient(135deg, #b81c1c 0%, #5c0d0d 100%); position:relative; overflow:hidden; box-shadow:0 16px 32px rgba(184,28,28,0.28); }
+  .rank-row { display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1; }
+  .rank-name { font-size:21px; font-weight:800; }
+  .rank-sub { font-size:11px; opacity:0.82; margin-top:3px; }
+  .rank-badge-img { width:44px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3)); }
+  .progress-track { margin-top:16px; height:7px; background: rgba(0,0,0,0.35); border-radius:10px; overflow:hidden; position:relative; z-index:1; }
+  .progress-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, #ffb3b3, #ffffff); }
+  .quick-stats { display:flex; gap:10px; margin-top:18px; }
+  .qstat { flex:1; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:14px 8px; text-align:center; }
+  .qstat .num { font-size:17px; font-weight:800; }
+  .qstat .lbl { font-size:9.5px; color:#75757c; margin-top:3px; }
+  .cta-big { margin-top:26px; width:100%; }
+
+  /* ---- quiz ---- */
+  .quiz-header { display:flex; justify-content:space-between; align-items:center; }
+  .qnum { font-size:12px; color:#75757c; font-weight:600; }
+  .qcat { font-size:10.5px; background: rgba(196,30,30,0.12); border:1px solid rgba(196,30,30,0.3); padding:5px 12px; border-radius:20px; color:#ff6b6b; font-weight:600; }
+  .timer-wrap { display:flex; justify-content:center; margin:26px 0 20px; }
+  .timer-ring { position:relative; width:110px; height:110px; }
+  .timer-ring svg { transform: rotate(-90deg); }
+  .timer-ring .bg { stroke:#1a191e; }
+  .timer-ring .fg { stroke:#e83030; stroke-linecap:round; transition: stroke-dashoffset 1s linear; }
+  .timer-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; }
+  .q-text { text-align:center; font-size:15.5px; font-weight:600; line-height:1.9; padding:0 8px; }
+  .options { margin-top:22px; display:flex; flex-direction:column; gap:10px; }
+  .opt { background: rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:15px 16px; font-size:13.5px; font-weight:500; display:flex; align-items:center; gap:12px; cursor:pointer; }
+  .opt .letter { width:28px; height:28px; border-radius:10px; background: rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; color:#75757c; flex-shrink:0; }
+  .opt.correct { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.06); }
+  .opt.correct .letter { background:#22c55e; color:#08080a; }
+  .opt.wrong { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.06); }
+  .opt.wrong .letter { background:#ef4444; color:#08080a; }
+  .opt.disabled { pointer-events:none; }
+
+  /* ---- result ---- */
+  .res-badge { width:84px; height:84px; margin:8px auto 0; border-radius:50%; background: linear-gradient(135deg, #ffb22d, #c47800); display:flex; align-items:center; justify-content:center; box-shadow:0 0 40px rgba(255,178,45,0.3); }
+  .res-title { text-align:center; font-size:18px; font-weight:800; margin-top:16px; }
+  .res-sub { text-align:center; font-size:11.5px; color:#75757c; margin-top:5px; }
+  .res-score { text-align:center; font-size:40px; font-weight:900; margin-top:14px; color:#ff6b6b; }
+  .res-score-label { text-align:center; font-size:10px; color:#75757c; margin-top:-6px; letter-spacing:1px; }
+  .res-stats { display:flex; gap:10px; margin-top:20px; }
+  .res-stat { flex:1; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:12px 8px; text-align:center; }
+  .res-stat .v { font-size:16px; font-weight:800; }
+  .res-stat.g .v { color:#22c55e; }
+  .res-stat.r .v { color:#ef4444; }
+  .res-stat .l { font-size:9px; color:#75757c; margin-top:3px; }
+  .res-actions { margin-top:22px; display:flex; flex-direction:column; gap:9px; }
+
+  /* ---- error ---- */
+  .err-icon { width:76px; height:76px; border-radius:22px; background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(239,68,68,0.04)); border:1px solid rgba(239,68,68,0.3); display:flex; align-items:center; justify-content:center; margin-bottom:6px; }
 </style>
 </head>
 <body>
+<div id="app">
 
-<div id="quiz"></div>
+  <!-- 1. LOADING -->
+  <div class="screen active" id="screen-loading">
+    <div class="center-flex" style="flex:1">
+      <div class="loading-logo"><img src="assets/logo-circle.jpg" alt=""></div>
+      <div class="spinner"></div>
+      <div class="loading-text">در حال بررسی وضعیت عملیات...</div>
+    </div>
+  </div>
+
+  <!-- 2. FORCE JOIN -->
+  <div class="screen" id="screen-forcejoin">
+    <div class="fj-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="1.8"><path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5Z"/><path d="m9 12 2 2 4-4"/></svg>
+    </div>
+    <div class="fj-title">دسترسی محدود شده</div>
+    <div class="fj-desc">برای ورود به میدان آزمون، ابتدا باید عضو واحد اطلاعاتی DAXOR بشی</div>
+    <div class="fj-channel-card">
+      <img src="assets/logo-circle.jpg" alt="">
+      <div><div class="cn">DAXOR UNIT</div><div class="cs">@Daxor_unit</div></div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:22px" onclick="openChannel()">عضویت در کانال</button>
+    <button class="btn btn-secondary" style="margin-top:10px" onclick="recheckMembership()">بررسی مجدد عضویت</button>
+  </div>
+
+  <!-- 3. COOLDOWN -->
+  <div class="screen" id="screen-cooldown">
+    <div class="cd-icon">
+      <svg width="90" height="90">
+        <circle class="cd-ring-bg" cx="45" cy="45" r="38" fill="none" stroke-width="7"/>
+        <circle class="cd-ring-fg" id="cdRing" cx="45" cy="45" r="38" fill="none" stroke-width="7" stroke-dasharray="239" stroke-dashoffset="0"/>
+      </svg>
+    </div>
+    <div class="cd-title">عملیات بعدی در راهه</div>
+    <div class="cd-timer" id="cdTimerText">۰۰:۰۰:۰۰</div>
+    <div class="cd-desc">تا آماده شدن ۱۰ سوال جدید</div>
+    <button class="btn btn-secondary" style="margin-top:24px" onclick="showScreen('home')">بازگشت به خانه</button>
+  </div>
+
+  <!-- 4. HOME -->
+  <div class="screen" id="screen-home">
+    <div class="home-top">
+      <div class="greet">
+        <div class="avatar"><img id="homeAvatar" src="assets/avatars/avatar-3.png" alt=""></div>
+        <div class="greet-text"><div class="hi">خوش اومدی</div><div class="name" id="homeName">سرباز</div></div>
+      </div>
+    </div>
+    <div class="rank-card">
+      <div class="rank-row">
+        <div>
+          <div class="rank-name" id="homeRankName">سرباز صفر</div>
+          <div class="rank-sub" id="homeRankSub">تا رتبه بعدی</div>
+        </div>
+        <img class="rank-badge-img" id="homeRankImg" src="assets/ranks/rank-1.png" alt="">
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="homeProgressFill" style="width:0%"></div></div>
+    </div>
+    <div class="quick-stats">
+      <div class="qstat"><div class="num" id="statGames">۰</div><div class="lbl">بازی</div></div>
+      <div class="qstat"><div class="num" id="statInvites">۰</div><div class="lbl">دعوت</div></div>
+      <div class="qstat"><div class="num" id="statScore">۰</div><div class="lbl">امتیاز کل</div></div>
+    </div>
+    <button class="btn btn-primary cta-big" onclick="startGame()">شروع عملیات</button>
+  </div>
+
+  <!-- 5. QUIZ -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-header">
+      <div class="qnum" id="quizProgress">سوال ۱ از ۱۰</div>
+      <div class="qcat" id="quizCategory">عمومی</div>
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-ring">
+        <svg width="110" height="110">
+          <circle class="bg" cx="55" cy="55" r="48" fill="none" stroke-width="8"/>
+          <circle class="fg" id="quizRing" cx="55" cy="55" r="48" fill="none" stroke-width="8" stroke-dasharray="301" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-num" id="quizTimerNum">۲۰</div>
+      </div>
+    </div>
+    <div class="q-text" id="quizQuestionText">در حال بارگذاری...</div>
+    <div class="options" id="quizOptions"></div>
+  </div>
+
+  <!-- 6. RESULT -->
+  <div class="screen" id="screen-result">
+    <div class="res-badge">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1a1200" stroke-width="2"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg>
+    </div>
+    <div class="res-title">عملیات با موفقیت تکمیل شد</div>
+    <div class="res-sub" id="resSub">۰ از ۱۰ پاسخ صحیح</div>
+    <div class="res-score" id="resScore">۰</div>
+    <div class="res-score-label">امتیاز کسب‌شده</div>
+    <div class="res-stats">
+      <div class="res-stat g"><div class="v" id="resCorrect">۰</div><div class="l">درست</div></div>
+      <div class="res-stat r"><div class="v" id="resWrong">۰</div><div class="l">غلط</div></div>
+      <div class="res-stat"><div class="v" id="resTotal">۰</div><div class="l">کل پاسخ</div></div>
+    </div>
+    <div class="res-actions">
+      <button class="btn btn-primary" onclick="showScreen('home'); loadHomeData();">بازگشت به خانه</button>
+    </div>
+  </div>
+
+  <!-- 7. ERROR -->
+  <div class="screen" id="screen-error">
+    <div class="center-flex" style="flex:1">
+      <div class="err-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg></div>
+      <div style="font-size:15.5px;font-weight:800">ارتباط با پایگاه فرماندهی قطع شد</div>
+      <div style="font-size:11.5px;color:#8a8a8f;margin-top:6px;line-height:1.8">اتصال اینترنت خودت رو چک کن و دوباره تلاش کن</div>
+      <button class="btn btn-primary" style="margin-top:20px;width:auto;padding:12px 30px" onclick="init()">تلاش مجدد</button>
+    </div>
+  </div>
+
+</div>
 
 <script>
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
+// ============================================================
+// تنظیمات
+// ============================================================
+const SUPABASE_URL = "https://nhnfnmphwzjpkcxnpozi.supabase.co";
+const SUPABASE_KEY = "sb_publishable_0IRRaPoORzVgflldy_e0pw_ojXATJaQ";
+const CHANNEL_USERNAME = "Daxor_unit";
 
-const allQuestions = [
-  { question: "جنگ جهانی دوم در چه سالی آغاز شد؟", options: ["۱۹۳۵", "۱۹۳۹", "۱۹۴۱", "۱۹۴۵"], correct: 1 },
-  { question: "کدام کشور اولین بمب اتمی را در جنگ استفاده کرد؟", options: ["شوروی", "آلمان", "آمریکا", "انگلیس"], correct: 2 },
-  { question: "تانک تیگر (Tiger) متعلق به کدام کشور بود؟", options: ["آلمان", "آمریکا", "شوروی", "فرانسه"], correct: 0 },
-  { question: "دکترین بلیتزکریگ (جنگ رعدآسا) اولین بار توسط چه کشوری اجرا شد؟", options: ["آمریکا", "آلمان نازی", "ژاپن", "ایتالیا"], correct: 1 },
-  { question: "جنگنده اف-۲۲ رپتور محصول کدام کشور است؟", options: ["روسیه", "چین", "آمریکا", "فرانسه"], correct: 2 },
-  { question: "کدام جنگ به «جنگ سرد» معروف است؟", options: ["ایران و عراق", "آمریکا و شوروی", "کره شمالی و جنوبی", "ویتنام و فرانسه"], correct: 1 },
-  { question: "موشک اسکاد ابتدا توسط کدام کشور توسعه یافت؟", options: ["شوروی", "آمریکا", "چین", "آلمان"], correct: 0 },
-  { question: "ناوهواپیمابر نیمیتز متعلق به نیروی دریایی کدام کشور است؟", options: ["روسیه", "آمریکا", "چین", "بریتانیا"], correct: 1 }
-];
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
 
-const QUESTIONS_PER_GAME = 5;
+// گرفتن اطلاعات کاربر از تلگرام (یا مقدار تستی اگر بیرون تلگرام باز شده)
+const tgUser = tg?.initDataUnsafe?.user;
+const USER_ID = tgUser?.id || 111222333; // مقدار تستی برای حالت خارج از تلگرام
+const USERNAME = tgUser?.username || tgUser?.first_name || "کاربر";
 
-let questions = [];
-let current = 0;
-let score = 0;
+// استخراج آیدی دعوت‌کننده از start_param (اگر از لینک دعوت اومده باشه)
+const startParam = tg?.initDataUnsafe?.start_param || "";
+let invitedBy = null;
+if (startParam.startsWith("ref_")) {
+  invitedBy = parseInt(startParam.replace("ref_", ""), 10) || null;
+}
 
-function shuffle(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+let currentSession = null;
+let currentQuestions = [];
+let currentQIndex = 0;
+let questionStartTime = 0;
+let timerInterval = null;
+const QUESTION_SECONDS = 20;
+
+// ============================================================
+// ابزار کمکی
+// ============================================================
+function showScreen(name) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("screen-" + name).classList.add("active");
+}
+
+function toFa(num) {
+  return String(num).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
+}
+
+async function callFunction(name, body) {
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok && res.status >= 500) throw new Error("server_error");
+  return res.json();
+}
+
+function openChannel() {
+  if (tg) tg.openTelegramLink(`https://t.me/${CHANNEL_USERNAME}`);
+  else window.open(`https://t.me/${CHANNEL_USERNAME}`, "_blank");
+}
+
+// ============================================================
+// ۱. مسیر اصلی هنگام باز شدن اپ
+// ============================================================
+async function init() {
+  showScreen("loading");
+  try {
+    const membership = await callFunction("check-membership", { telegram_id: USER_ID });
+    if (!membership.is_member) {
+      showScreen("forcejoin");
+      return;
+    }
+    await loadHomeData();
+    showScreen("home");
+  } catch (e) {
+    showScreen("error");
   }
-  return arr;
 }
 
-function startGame() {
-  questions = shuffle(allQuestions).slice(0, QUESTIONS_PER_GAME);
-  current = 0;
-  score = 0;
-  showQuestion();
+async function recheckMembership() {
+  showScreen("loading");
+  try {
+    const membership = await callFunction("check-membership", { telegram_id: USER_ID });
+    if (membership.is_member) {
+      await loadHomeData();
+      showScreen("home");
+    } else {
+      showScreen("forcejoin");
+    }
+  } catch (e) {
+    showScreen("error");
+  }
 }
 
+// ============================================================
+// ۲. صفحه خانه
+// ============================================================
+async function loadHomeData() {
+  try {
+    const profile = await callFunction("get-profile", { telegram_id: USER_ID });
+    document.getElementById("homeName").textContent = profile.username || "سرباز";
+    document.getElementById("homeRankName").textContent = profile.current_rank || "سرباز صفر";
+    document.getElementById("statGames").textContent = toFa(profile.games_played || 0);
+    document.getElementById("statInvites").textContent = toFa(profile.successful_invites || 0);
+    document.getElementById("statScore").textContent = toFa(profile.total_score || 0);
+    document.getElementById("homeProgressFill").style.width = (profile.progress_percent || 0) + "%";
+    if (profile.next_rank) {
+      document.getElementById("homeRankSub").textContent = `تا رتبه‌ی بعدی: ${profile.next_rank}`;
+    } else {
+      document.getElementById("homeRankSub").textContent = "بالاترین درجه";
+    }
+  } catch (e) {
+    // اگه پروفایل نبود (کاربر جدید)، مقادیر پیش‌فرض می‌مونه
+  }
+}
+
+// ============================================================
+// ۳. شروع بازی
+// ============================================================
+async function startGame() {
+  showScreen("loading");
+  try {
+    const res = await callFunction("start-session", {
+      telegram_id: USER_ID,
+      username: USERNAME,
+      invited_by: invitedBy,
+    });
+
+    if (!res.allowed) {
+      startCooldownDisplay(res.remaining_seconds || 0);
+      showScreen("cooldown");
+      return;
+    }
+
+    currentSession = res.session_id;
+    currentQuestions = res.questions;
+    currentQIndex = 0;
+    showQuestion();
+    showScreen("quiz");
+  } catch (e) {
+    showScreen("error");
+  }
+}
+
+// ============================================================
+// ۴. محدودیت زمانی
+// ============================================================
+function startCooldownDisplay(remainingSeconds) {
+  let remaining = remainingSeconds;
+  const ring = document.getElementById("cdRing");
+  const circumference = 239;
+
+  function tick() {
+    const h = Math.floor(remaining / 3600);
+    const m = Math.floor((remaining % 3600) / 60);
+    const s = remaining % 60;
+    document.getElementById("cdTimerText").textContent =
+      toFa(String(h).padStart(2, "0")) + ":" +
+      toFa(String(m).padStart(2, "0")) + ":" +
+      toFa(String(s).padStart(2, "0"));
+
+    const fullDuration = 5 * 3600;
+    const progress = 1 - remaining / fullDuration;
+    ring.style.strokeDashoffset = circumference * (1 - progress);
+
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      showScreen("home");
+      loadHomeData();
+      return;
+    }
+    remaining--;
+  }
+  tick();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(tick, 1000);
+}
+
+// ============================================================
+// ۵. نمایش سوال + تایمر
+// ============================================================
 function showQuestion() {
-  const q = questions[current];
-  const container = document.getElementById('quiz');
-  container.innerHTML = `
-    <h3>سوال ${current + 1} از ${questions.length}</h3>
-    <p>${q.question}</p>
-    ${q.options.map((opt, i) => `<button class="option" onclick="checkAnswer(${i})">${opt}</button>`).join('')}
-  `;
-}
+  const q = currentQuestions[currentQIndex];
+  document.getElementById("quizProgress").textContent =
+    `سوال ${toFa(currentQIndex + 1)} از ${toFa(currentQuestions.length)}`;
+  document.getElementById("quizCategory").textContent = q.category || "عمومی";
+  document.getElementById("quizQuestionText").textContent = q.question_text;
 
-function checkAnswer(index) {
-  const q = questions[current];
-  const buttons = document.querySelectorAll('.option');
-  buttons.forEach((btn, i) => {
-    btn.disabled = true;
-    if (i === q.correct) btn.classList.add('correct');
-    else if (i === index) btn.classList.add('wrong');
+  const optsWrap = document.getElementById("quizOptions");
+  optsWrap.innerHTML = "";
+  const letters = ["A", "B", "C", "D"];
+  const options = [q.option_1, q.option_2, q.option_3, q.option_4];
+  options.forEach((optText, idx) => {
+    const div = document.createElement("div");
+    div.className = "opt";
+    div.innerHTML = `<div class="letter">${letters[idx]}</div><div>${optText}</div>`;
+    div.onclick = () => selectAnswer(idx);
+    optsWrap.appendChild(div);
   });
 
-  if (index === q.correct) score++;
+  questionStartTime = Date.now();
+  startQuestionTimer();
+}
 
-  setTimeout(() => {
-    current++;
-    if (current < questions.length) {
-      showQuestion();
-    } else {
-      showResult();
+function startQuestionTimer() {
+  clearInterval(timerInterval);
+  let remaining = QUESTION_SECONDS;
+  const ring = document.getElementById("quizRing");
+  const circumference = 301;
+  document.getElementById("quizTimerNum").textContent = toFa(remaining);
+  ring.style.strokeDashoffset = 0;
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    document.getElementById("quizTimerNum").textContent = toFa(Math.max(remaining, 0));
+    const progress = 1 - remaining / QUESTION_SECONDS;
+    ring.style.strokeDashoffset = circumference * progress;
+
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      selectAnswer(-1); // بدون پاسخ (تایم‌اوت)
     }
   }, 1000);
 }
 
-function showResult() {
-  document.getElementById('quiz').innerHTML = `
-    <div id="score">امتیاز شما: ${score} از ${questions.length}</div>
-    <button id="restart" onclick="startGame()">شروع دوباره</button>
-  `;
+// ============================================================
+// ۶. انتخاب پاسخ
+// ============================================================
+async function selectAnswer(selectedIndex) {
+  clearInterval(timerInterval);
+  const timeTaken = Math.round((Date.now() - questionStartTime) / 1000);
+  const q = currentQuestions[currentQIndex];
+
+  const opts = document.querySelectorAll(".opt");
+  opts.forEach(o => o.classList.add("disabled"));
+
+  let result;
+  try {
+    result = await callFunction("submit-answer", {
+      session_id: currentSession,
+      question_id: q.id,
+      selected_index: selectedIndex,
+      time_taken_seconds: timeTaken,
+    });
+  } catch (e) {
+    result = { correct_index: -1 };
+  }
+
+  // نمایش رنگ درست/غلط
+  if (result.correct_index != null && result.correct_index >= 0) {
+    opts[result.correct_index]?.classList.add("correct");
+  }
+  if (selectedIndex >= 0 && selectedIndex !== result.correct_index) {
+    opts[selectedIndex]?.classList.add("wrong");
+  }
+
+  // مکث کوتاه، سپس رفتن به سوال بعد یا نتیجه‌ی نهایی
+  setTimeout(() => {
+    currentQIndex++;
+    if (currentQIndex < currentQuestions.length) {
+      showQuestion();
+    } else {
+      finishGame();
+    }
+  }, 1600);
 }
 
-startGame();
+// ============================================================
+// ۷. پایان بازی
+// ============================================================
+async function finishGame() {
+  showScreen("loading");
+  try {
+    const res = await callFunction("finish-session", { session_id: currentSession });
+    document.getElementById("resScore").textContent = toFa(res.score || 0);
+    document.getElementById("resSub").textContent =
+      `${toFa(res.correct_count || 0)} از ${toFa(res.total_answered || 0)} پاسخ صحیح`;
+    document.getElementById("resCorrect").textContent = toFa(res.correct_count || 0);
+    document.getElementById("resWrong").textContent = toFa(res.wrong_count || 0);
+    document.getElementById("resTotal").textContent = toFa(res.total_answered || 0);
+    showScreen("result");
+  } catch (e) {
+    showScreen("error");
+  }
+}
+
+// ============================================================
+// شروع
+// ============================================================
+init();
 </script>
 </body>
 </html>
