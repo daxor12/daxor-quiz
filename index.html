@@ -208,6 +208,21 @@
   .cat-stat-top { display:flex; justify-content:space-between; font-size:12px; font-weight:600; margin-bottom:8px; }
   .cat-stat-bar-track { height:6px; background: rgba(0,0,0,0.35); border-radius:10px; overflow:hidden; }
   .cat-stat-bar-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, #a31818, #ff6b6b); }
+
+  /* ---- public profile ---- */
+  .pub-hero { display:flex; flex-direction:column; align-items:center; text-align:center; margin-top:10px; }
+  .pub-avatar { width:96px; height:96px; border-radius:26px; overflow:hidden; box-shadow: 0 0 0 3px rgba(196,30,30,0.55), 0 10px 30px rgba(196,30,30,0.25); }
+  .pub-avatar img { width:100%; height:100%; object-fit:cover; }
+  .pub-name { font-size:18px; font-weight:800; margin-top:14px; }
+  .pub-rank-chip { display:inline-flex; align-items:center; gap:6px; margin-top:9px; background: linear-gradient(135deg, rgba(196,30,30,0.22), rgba(196,30,30,0.06)); border:1px solid rgba(196,30,30,0.35); padding:5px 14px 5px 9px; border-radius:20px; font-size:11.5px; font-weight:700; color:#ff6b6b; }
+  .pub-rank-chip img { width:17px; }
+  .pub-stats-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:9px; margin-top:22px; }
+  .pub-section-title { font-size:11px; color:#75757c; letter-spacing:1px; margin-top:24px; margin-bottom:10px; padding:0 2px; font-weight:700; }
+  .pub-loading, .pub-error, .pub-empty-cats { text-align:center; color:#75757c; font-size:12px; padding:40px 0; }
+  .pub-error { color:#ff6b6b; }
+  .pub-back-bottom { margin-top:24px; }
+  .fade-in { animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
 </style>
 </head>
 <body>
@@ -398,21 +413,32 @@
   <div class="screen" id="screen-publicprofile">
     <div class="back-row">
       <div class="back-btn" onclick="showScreen('leaderboard')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg></div>
-      <div class="page-title">پروفایل کاربر</div>
+      <div class="page-title">پروفایل بازیکن</div>
       <div class="spacer34"></div>
     </div>
-    <div class="hero">
-      <div class="p-avatar"><img id="pubAvatar" src="assets/avatars/avatar-3.png" alt=""></div>
-      <div class="hero-info">
-        <div class="p-name" id="pubName">کاربر</div>
-        <div class="p-rank-chip"><img id="pubRankImg" src="assets/ranks/rank-1.png" alt=""><span id="pubRankName">سرباز صفر</span></div>
+
+    <div id="pubLoading" class="pub-loading">در حال دریافت اطلاعات...</div>
+    <div id="pubError" class="pub-error" style="display:none">اطلاعات این بازیکن در دسترس نیست</div>
+
+    <div id="pubContent" class="fade-in" style="display:none">
+      <div class="pub-hero">
+        <div class="pub-avatar"><img id="pubAvatar" src="assets/avatars/avatar-3.png" alt=""></div>
+        <div class="pub-name" id="pubName">کاربر</div>
+        <div class="pub-rank-chip"><img id="pubRankImg" src="assets/ranks/rank-1.png" alt=""><span id="pubRankName">سرباز صفر</span></div>
       </div>
+
+      <div class="pub-stats-grid">
+        <div class="stat-box"><div class="v" id="pubRankNameStat">-</div><div class="l">درجه</div></div>
+        <div class="stat-box"><div class="v" id="pubScore">۰</div><div class="l">امتیاز کل</div></div>
+        <div class="stat-box"><div class="v" id="pubGames">۰</div><div class="l">بازی</div></div>
+      </div>
+
+      <div class="pub-section-title">عملکرد تخصصی</div>
+      <div class="cat-stats-list" id="pubCatStats"></div>
+      <div id="pubCatEmpty" class="pub-empty-cats" style="display:none">هنوز آماری برای این بازیکن ثبت نشده</div>
     </div>
-    <div class="res-stats" style="margin-top:18px">
-      <div class="res-stat"><div class="v" id="pubGames">۰</div><div class="l">بازی</div></div>
-      <div class="res-stat"><div class="v" id="pubScore">۰</div><div class="l">امتیاز کل</div></div>
-    </div>
-    <div class="cat-stats-list" id="pubCatStats"></div>
+
+    <button class="btn btn-secondary pub-back-bottom" onclick="showScreen('leaderboard')">بازگشت به لیدربرد</button>
   </div>
 
   <!-- 10. SETTINGS -->
@@ -819,30 +845,59 @@ async function selectAvatar(n) {
     await callFunction("update-avatar", { telegram_id: USER_ID, avatar_index: n });
   } catch (e) { /* دفعه بعد که پروفایل لود بشه اصلاح میشه */ }
 }
+
+// ============================================================
+// آمار دسته‌بندی (مشترک بین پروفایل خودم و پروفایل عمومی)
+// ============================================================
 function renderCategoryStats(containerId, stats) {
   const el = document.getElementById(containerId);
   if (!el) return;
   if (!stats || stats.length === 0) { el.innerHTML = ""; return; }
   el.innerHTML = stats.map(s => {
-    const pct = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
+    const pct = Math.round(s.percent ?? 0);
     return `<div class="cat-stat-row">
-      <div class="cat-stat-top"><span>${s.category}</span><span>${toFa(pct)}٪ (${toFa(s.correct)}/${toFa(s.total)})</span></div>
+      <div class="cat-stat-top"><span>${s.category}</span><span>${toFa(pct)}٪ (${toFa(s.correct_count)}/${toFa(s.total_count)})</span></div>
       <div class="cat-stat-bar-track"><div class="cat-stat-bar-fill" style="width:${pct}%"></div></div>
     </div>`;
   }).join("");
 }
+
+// ============================================================
+// پروفایل عمومی (نمایش پروفایل بقیه‌ی بازیکن‌ها)
+// ============================================================
 async function openPublicProfile(telegramId) {
   showScreen("publicprofile");
+  const loadingEl = document.getElementById("pubLoading");
+  const errorEl = document.getElementById("pubError");
+  const contentEl = document.getElementById("pubContent");
+  const catEmptyEl = document.getElementById("pubCatEmpty");
+
+  loadingEl.style.display = "block";
+  errorEl.style.display = "none";
+  contentEl.style.display = "none";
+
   try {
     const p = await callFunction("get-public-profile", { telegram_id: telegramId });
+    if (!p || p.error) throw new Error("not_found");
+
     document.getElementById("pubAvatar").src = avatarPath(p.avatar_index || 3);
     document.getElementById("pubName").textContent = p.username || "کاربر";
     document.getElementById("pubRankName").textContent = p.current_rank || "سرباز صفر";
     document.getElementById("pubRankImg").src = rankImgPath(p.current_rank);
-    document.getElementById("pubGames").textContent = toFa(p.games_played || 0);
+    document.getElementById("pubRankNameStat").textContent = p.current_rank || "سرباز صفر";
     document.getElementById("pubScore").textContent = toFa(p.total_score || 0);
-    renderCategoryStats("pubCatStats", p.category_stats);
-  } catch (e) { /* صفحه با مقادیر پیش‌فرض می‌مونه */ }
+    document.getElementById("pubGames").textContent = toFa(p.games_played || 0);
+
+    const stats = p.category_stats || [];
+    renderCategoryStats("pubCatStats", stats);
+    catEmptyEl.style.display = stats.length === 0 ? "block" : "none";
+
+    loadingEl.style.display = "none";
+    contentEl.style.display = "block";
+  } catch (e) {
+    loadingEl.style.display = "none";
+    errorEl.style.display = "block";
+  }
 }
 
 // ============================================================
