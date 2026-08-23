@@ -6,473 +6,463 @@
 <title>DAXOR Military Quiz</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap");
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; }
-  body {
-    font-family: "Vazirmatn", sans-serif;
-    background: #08080a;
-    color: #f5f5f5;
-    overflow-x: hidden;
-    min-height: 100vh;
-  }
-  #app {
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
-    background: radial-gradient(ellipse 420px 260px at 20% -10%, rgba(196,30,30,0.12), transparent 60%), #08080a;
-    padding: 20px 18px 100px;
-    position: relative;
-  }
-  .screen { display: none; flex-direction: column; min-height: calc(100vh - 130px); }
-  .screen.active { display: flex; }
-
-  /* ---- shared ---- */
-  .center-flex { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:6px; }
-  .btn { border: none; border-radius: 15px; padding: 15px; font-family: inherit; font-weight: 700; font-size: 13.5px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
-  .btn-primary { background: linear-gradient(135deg, #f13c3c, #a31818); color:#fff; box-shadow: 0 12px 26px rgba(196,30,30,0.35); }
-  .btn-secondary { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color:#ccc; }
-  .back-row { display:flex; align-items:center; justify-content:space-between; margin-bottom: 14px; }
-  .back-btn { width:34px; height:34px; border-radius:10px; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-  .page-title { font-size:14px; font-weight:700; }
-  .spacer34 { width:34px; }
-
-  /* ---- loading ---- */
-  .loading-logo { width:70px; height:70px; border-radius:50%; overflow:hidden; border:2px solid rgba(196,30,30,0.5); box-shadow:0 0 30px rgba(196,30,30,0.3); }
-  .loading-logo img { width:100%; height:100%; object-fit:cover; }
-  .spinner { width:34px; height:34px; border-radius:50%; border:3px solid #232228; border-top-color:#e83030; animation: spin 0.9s linear infinite; margin-top: 20px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size:12px; color:#75757c; letter-spacing:1px; margin-top: 14px; }
-
-  /* ---- force join ---- */
-  .fj-icon { width:76px; height:76px; border-radius:22px; margin:10px auto 0; background: linear-gradient(135deg, rgba(196,30,30,0.22), rgba(196,30,30,0.05)); border:1px solid rgba(196,30,30,0.35); display:flex; align-items:center; justify-content:center; }
-  .fj-title { text-align:center; font-size:17px; font-weight:800; margin-top:18px; }
-  .fj-desc { text-align:center; font-size:12px; color:#8a8a8f; margin-top:8px; line-height:1.9; padding:0 12px; }
-  .fj-channel-card { margin-top:22px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px; display:flex; align-items:center; gap:12px; }
-  .fj-channel-card img { width:44px; height:44px; border-radius:50%; }
-  .fj-channel-card .cn { font-size:13px; font-weight:700; }
-  .fj-channel-card .cs { font-size:10.5px; color:#75757c; margin-top:2px; }
-
-  /* ---- cooldown ---- */
-  .cd-icon { width:90px; height:90px; margin:10px auto 0; position:relative; }
-  .cd-icon svg { transform: rotate(-90deg); }
-  .cd-ring-bg { stroke:#1a191e; }
-  .cd-ring-fg { stroke:#e83030; stroke-linecap:round; transition: stroke-dashoffset 1s linear; }
-  .cd-title { text-align:center; font-size:16px; font-weight:800; margin-top:16px; }
-  .cd-timer { text-align:center; font-size:30px; font-weight:900; margin-top:10px; letter-spacing:1px; direction:ltr; color:#ff6b6b; }
-  .cd-desc { text-align:center; font-size:11.5px; color:#75757c; margin-top:6px; }
-
-  /* ---- home ---- */
-  .home-top { display:flex; align-items:center; justify-content:space-between; }
-  .greet { display:flex; align-items:center; gap:11px; }
-  .avatar { width:44px; height:44px; border-radius:14px; overflow:hidden; border:1.5px solid rgba(196,30,30,0.5); }
-  .avatar img { width:100%; height:100%; object-fit:cover; }
-  .greet-text .hi { font-size:11.5px; color:#75757c; font-weight:500; }
-  .greet-text .name { font-size:15.5px; font-weight:800; margin-top:1px; }
-  .rank-card { margin-top:20px; border-radius:22px; padding:20px; background: linear-gradient(135deg, #b81c1c 0%, #5c0d0d 100%); position:relative; overflow:hidden; box-shadow:0 16px 32px rgba(184,28,28,0.28); }
-  .rank-row { display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1; }
-  .rank-name { font-size:21px; font-weight:800; }
-  .rank-sub { font-size:11px; opacity:0.82; margin-top:3px; }
-  .rank-badge-img { width:44px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3)); }
-  .progress-track { margin-top:16px; height:7px; background: rgba(0,0,0,0.35); border-radius:10px; overflow:hidden; position:relative; z-index:1; }
-  .progress-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, #ffb3b3, #ffffff); }
-  .quick-stats { display:flex; gap:10px; margin-top:18px; }
-  .qstat { flex:1; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:14px 8px; text-align:center; }
-  .qstat .num { font-size:17px; font-weight:800; }
-  .qstat .lbl { font-size:9.5px; color:#75757c; margin-top:3px; }
-  .cta-big { margin-top:26px; width:100%; }
-
-  /* ---- quiz ---- */
-  .quiz-header { display:flex; justify-content:space-between; align-items:center; }
-  .qnum { font-size:12px; color:#75757c; font-weight:600; }
-  .qcat { font-size:10.5px; background: rgba(196,30,30,0.12); border:1px solid rgba(196,30,30,0.3); padding:5px 12px; border-radius:20px; color:#ff6b6b; font-weight:600; }
-  .timer-wrap { display:flex; justify-content:center; margin:26px 0 20px; }
-  .timer-ring { position:relative; width:110px; height:110px; }
-  .timer-ring svg { transform: rotate(-90deg); }
-  .timer-ring .bg { stroke:#1a191e; }
-  .timer-ring .fg { stroke:#e83030; stroke-linecap:round; transition: stroke-dashoffset 1s linear; }
-  .timer-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; }
-  .q-text { text-align:center; font-size:15.5px; font-weight:600; line-height:1.9; padding:0 8px; }
-  .options { margin-top:22px; display:flex; flex-direction:column; gap:10px; }
-  .opt { background: rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:15px 16px; font-size:13.5px; font-weight:500; display:flex; align-items:center; gap:12px; cursor:pointer; }
-  .opt .letter { width:28px; height:28px; border-radius:10px; background: rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; color:#75757c; flex-shrink:0; }
-  .opt.correct { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.06); }
-  .opt.correct .letter { background:#22c55e; color:#08080a; }
-  .opt.wrong { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.06); }
-  .opt.wrong .letter { background:#ef4444; color:#08080a; }
-  .opt.disabled { pointer-events:none; }
-
-  /* ---- result ---- */
-  .res-badge { width:84px; height:84px; margin:8px auto 0; border-radius:50%; background: linear-gradient(135deg, #ffb22d, #c47800); display:flex; align-items:center; justify-content:center; box-shadow:0 0 40px rgba(255,178,45,0.3); }
-  .res-title { text-align:center; font-size:18px; font-weight:800; margin-top:16px; }
-  .res-sub { text-align:center; font-size:11.5px; color:#75757c; margin-top:5px; }
-  .res-score { text-align:center; font-size:40px; font-weight:900; margin-top:14px; color:#ff6b6b; }
-  .res-score-label { text-align:center; font-size:10px; color:#75757c; margin-top:-6px; letter-spacing:1px; }
-  .res-stats { display:flex; gap:10px; margin-top:20px; }
-  .res-stat { flex:1; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:12px 8px; text-align:center; }
-  .res-stat .v { font-size:16px; font-weight:800; }
-  .res-stat.g .v { color:#22c55e; }
-  .res-stat.r .v { color:#ef4444; }
-  .res-stat .l { font-size:9px; color:#75757c; margin-top:3px; }
-  .res-actions { margin-top:22px; display:flex; flex-direction:column; gap:9px; }
-
-  /* ---- error ---- */
-  .err-icon { width:76px; height:76px; border-radius:22px; background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(239,68,68,0.04)); border:1px solid rgba(239,68,68,0.3); display:flex; align-items:center; justify-content:center; margin-bottom:6px; }
-
-  /* ---- bottom nav ---- */
-  .bottom-nav {
-    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-    width: calc(100% - 36px); max-width: 444px;
-    background: rgba(20,19,23,0.92); backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
-    padding: 10px 6px; display: none; justify-content: space-around;
-    z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  }
-  .bottom-nav.visible { display: flex; }
-  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; color:#55555c; background:none; border:none; font-family:inherit; }
-  .nav-item.active { color:#f13c3c; }
-  .nav-item .nlbl { font-size:9px; font-weight:600; }
-
-  /* ---- leaderboard ---- */
-  .lb-tabs { display:flex; gap:8px; margin-top:4px; }
-  .lb-tab { flex:1; text-align:center; padding:9px; border-radius:12px; font-size:11.5px; font-weight:600; background: rgba(255,255,255,0.03); color:#75757c; border:1px solid rgba(255,255,255,0.06); cursor:pointer; }
-  .lb-tab.active { background: linear-gradient(135deg, #e83030, #a31818); color:#fff; border-color: transparent; }
-  .lb-list { margin-top:16px; overflow-y:auto; }
-  .lb-row { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:16px; margin-bottom:8px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); cursor:pointer; }
-  .lb-row.top1 { background: linear-gradient(135deg, rgba(255,178,45,0.14), rgba(255,178,45,0.02)); border:1px solid rgba(255,178,45,0.3); }
-  .lb-row.self { border:1px solid rgba(196,30,30,0.4); background: rgba(196,30,30,0.06); }
-  .lb-row .pos { width:20px; font-size:13px; font-weight:800; color:#75757c; text-align:center; }
-  .lb-row.top1 .pos { color:#ffb22d; }
-  .lb-row .av { width:36px; height:36px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; background: linear-gradient(135deg,#3a3a40,#1e1d22); }
-  .lb-row .av img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
-  .lb-row.top1 .av { background: linear-gradient(135deg,#ffb22d,#c47800); color:#1a1200; }
-  .lb-row .info { flex:1; }
-  .lb-row .uname { font-size:12.5px; font-weight:700; }
-  .lb-row .uscore { font-size:12.5px; font-weight:800; color:#ff6b6b; }
-  .lb-row.top1 .uscore { color:#ffb22d; }
-  .empty-lb { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; padding-top: 40px; }
-  .empty-icon { width:64px; height:64px; border-radius:18px; background: rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; }
-  .empty-title { font-size:13.5px; font-weight:700; margin-top:8px; }
-  .empty-desc { font-size:11px; color:#75757c; line-height:1.8; padding:0 20px; }
-
-  /* ---- profile ---- */
-  .top-row { display:flex; justify-content:space-between; align-items:center; }
-  .iconbtn { width:34px; height:34px; border-radius:10px; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-  .hero { display:flex; align-items:center; gap:16px; margin-top:16px; }
-  .p-avatar { width:78px; height:78px; border-radius:22px; overflow:hidden; box-shadow: 0 0 0 2.5px rgba(196,30,30,0.55); flex-shrink:0; }
-  .p-avatar img { width:100%; height:100%; object-fit:cover; }
-  .hero-info { flex:1; }
-  .p-name { font-size:17px; font-weight:800; }
-  .p-rank-chip { display:inline-flex; align-items:center; gap:6px; margin-top:8px; background: linear-gradient(135deg, rgba(196,30,30,0.22), rgba(196,30,30,0.06)); border:1px solid rgba(196,30,30,0.35); padding:4px 12px 4px 8px; border-radius:20px; font-size:11px; font-weight:700; color:#ff6b6b; }
-  .p-rank-chip img { width:16px; }
-  .p-progress-track { margin-top:16px; height:7px; background: rgba(0,0,0,0.4); border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.05); }
-  .p-progress-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, #a31818, #ff6b6b); }
-  .p-progress-label { display:flex; justify-content:space-between; font-size:10px; color:#75757c; margin-top:7px; }
-  .stats-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:9px; margin-top:18px; }
-  .stat-box { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:12px 6px; text-align:center; }
-  .stat-box .v { font-size:15px; font-weight:800; }
-  .stat-box .l { font-size:9px; color:#75757c; margin-top:3px; }
-  .action-card { margin-top:14px; border-radius:18px; padding:15px; position:relative; overflow:hidden; }
-  .action-card.invite { background: linear-gradient(135deg, #b81c1c 0%, #5c0d0d 100%); }
-  .ac-head { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; }
-  .ac-desc { font-size:10.5px; opacity:0.85; margin-top:5px; line-height:1.7; }
-  .ac-row { margin-top:12px; display:flex; gap:8px; }
-  .ac-input { flex:1; background: rgba(0,0,0,0.28); border:1px solid rgba(255,255,255,0.15); border-radius:11px; padding:10px 12px; font-size:10px; color:#ffd9d9; direction:ltr; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .ac-btn { width:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; border:none; background:#fff; color:#a31818; cursor:pointer; flex-shrink:0; }
-
-  /* ---- avatar picker ---- */
-  .avatar-wrap { position: relative; flex-shrink:0; }
-  .edit-pencil {
-    position:absolute; bottom:-4px; left:-4px; width:26px; height:26px; border-radius:50%;
-    background: linear-gradient(135deg,#e83030,#a31818); border:2.5px solid #08080a;
-    display:flex; align-items:center; justify-content:center; cursor:pointer;
-  }
-  .av-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-top:18px; }
-  .av-cell { aspect-ratio:1; border-radius:16px; overflow:hidden; border:2px solid transparent; cursor:pointer; }
-  .av-cell.selected { border-color:#e83030; box-shadow:0 0 14px rgba(232,48,48,0.4); }
-  .av-cell img { width:100%; height:100%; object-fit:cover; }
-
-  /* ---- settings ---- */
-  .settings-group { margin-top:16px; }
-  .settings-group-title { font-size:10.5px; color:#666; letter-spacing:1.5px; margin-bottom:8px; padding:0 4px; }
-  .settings-row { display:flex; align-items:center; justify-content:space-between; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:13px 14px; margin-bottom:8px; }
-  .settings-row .stitle { font-size:12.5px; font-weight:600; }
-  .toggle { width:40px; height:23px; border-radius:20px; background:#2a2930; position:relative; flex-shrink:0; cursor:pointer; }
-  .toggle.on { background: linear-gradient(135deg, #e83030, #a31818); }
-  .toggle-dot { width:17px; height:17px; border-radius:50%; background:#fff; position:absolute; top:3px; right:20px; transition: right 0.2s; }
-  .toggle.on .toggle-dot { right:3px; }
-
-  /* ---- category stats ---- */
-  .cat-stats-list { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
-  .cat-stat-row { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:12px 14px; }
-  .cat-stat-top { display:flex; justify-content:space-between; font-size:12px; font-weight:600; margin-bottom:8px; }
-  .cat-stat-bar-track { height:6px; background: rgba(0,0,0,0.35); border-radius:10px; overflow:hidden; }
-  .cat-stat-bar-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, #a31818, #ff6b6b); }
-
-  /* ---- public profile ---- */
-  .pub-hero { display:flex; flex-direction:column; align-items:center; text-align:center; margin-top:10px; }
-  .pub-avatar { width:96px; height:96px; border-radius:26px; overflow:hidden; box-shadow: 0 0 0 3px rgba(196,30,30,0.55), 0 10px 30px rgba(196,30,30,0.25); }
-  .pub-avatar img { width:100%; height:100%; object-fit:cover; }
-  .pub-name { font-size:18px; font-weight:800; margin-top:14px; }
-  .pub-rank-chip { display:inline-flex; align-items:center; gap:6px; margin-top:9px; background: linear-gradient(135deg, rgba(196,30,30,0.22), rgba(196,30,30,0.06)); border:1px solid rgba(196,30,30,0.35); padding:5px 14px 5px 9px; border-radius:20px; font-size:11.5px; font-weight:700; color:#ff6b6b; }
-  .pub-rank-chip img { width:17px; }
-  .pub-stats-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:9px; margin-top:22px; }
-  .pub-section-title { font-size:11px; color:#75757c; letter-spacing:1px; margin-top:24px; margin-bottom:10px; padding:0 2px; font-weight:700; }
-  .pub-loading, .pub-error, .pub-empty-cats { text-align:center; color:#75757c; font-size:12px; padding:40px 0; }
-  .pub-error { color:#ff6b6b; }
-  .pub-back-bottom { margin-top:24px; }
-  .fade-in { animation: fadeIn 0.25s ease; }
-  @keyframes fadeIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap");
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+font-family: "Vazirmatn", sans-serif;
+background: #08080a;
+color: #f5f5f5;
+overflow-x: hidden;
+min-height: 100vh;
+}
+#app {
+max-width: 480px;
+margin: 0 auto;
+min-height: 100vh;
+background: radial-gradient(ellipse 420px 260px at 20% -10%, rgba(196,30,30,0.12), transparent 60%), #08080a;
+padding: 20px 18px 100px;
+position: relative;
+}
+.screen { display: none; flex-direction: column; min-height: calc(100vh - 130px); }
+.screen.active { display: flex; }
+.center-flex { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:6px; }
+.btn { border: none; border-radius: 15px; padding: 15px; font-family: inherit; font-weight: 700; font-size: 13.5px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
+.btn-primary { background: linear-gradient(135deg, #f13c3c, #a31818); color:#fff; box-shadow: 0 12px 26px rgba(196,30,30,0.35); }
+.btn-secondary { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color:#ccc; }
+.back-row { display:flex; align-items:center; justify-content:space-between; margin-bottom: 14px; }
+.back-btn { width:34px; height:34px; border-radius:10px; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.page-title { font-size:14px; font-weight:700; }
+.spacer34 { width:34px; }
+.loading-logo { width:70px; height:70px; border-radius:50%; overflow:hidden; border:2px solid rgba(196,30,30,0.5); box-shadow:0 0 30px rgba(196,30,30,0.3); }
+.loading-logo img { width:100%; height:100%; object-fit:cover; }
+.spinner { width:34px; height:34px; border-radius:50%; border:3px solid #232228; border-top-color:#e83030; animation: spin 0.9s linear infinite; margin-top: 20px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size:12px; color:#75757c; letter-spacing:1px; margin-top: 14px; }
+.fj-icon { width:76px; height:76px; border-radius:22px; margin:10px auto 0; background: linear-gradient(135deg, rgba(196,30,30,0.22), rgba(196,30,30,0.05)); border:1px solid rgba(196,30,30,0.35); display:flex; align-items:center; justify-content:center; }
+.fj-title { text-align:center; font-size:17px; font-weight:800; margin-top:18px; }
+.fj-desc { text-align:center; font-size:12px; color:#8a8a8f; margin-top:8px; line-height:1.9; padding:0 12px; }
+.fj-channel-card { margin-top:22px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px; display:flex; align-items:center; gap:12px; }
+.fj-channel-card img { width:44px; height:44px; border-radius:50%; }
+.fj-channel-card .cn { font-size:13px; font-weight:700; }
+.fj-channel-card .cs { font-size:10.5px; color:#75757c; margin-top:2px; }
+.cd-icon { width:90px; height:90px; margin:10px auto 0; position:relative; }
+.cd-icon svg { transform: rotate(-90deg); }
+.cd-ring-bg { stroke:#1a191e; }
+.cd-ring-fg { stroke:#e83030; stroke-linecap:round; transition: stroke-dashoffset 1s linear; }
+.cd-title { text-align:center; font-size:16px; font-weight:800; margin-top:16px; }
+.cd-timer { text-align:center; font-size:30px; font-weight:900; margin-top:10px; letter-spacing:1px; direction:ltr; color:#ff6b6b; }
+.cd-desc { text-align:center; font-size:11.5px; color:#75757c; margin-top:6px; }
+.home-top { display:flex; align-items:center; justify-content:space-between; }
+.greet { display:flex; align-items:center; gap:11px; }
+.avatar { width:44px; height:44px; border-radius:14px; overflow:hidden; border:1.5px solid rgba(196,30,30,0.5); }
+.avatar img { width:100%; height:100%; object-fit:cover; }
+.greet-text .hi { font-size:11.5px; color:#75757c; font-weight:500; }
+.greet-text .name { font-size:15.5px; font-weight:800; margin-top:1px; }
+.rank-card { margin-top:20px; border-radius:22px; padding:20px; background: linear-gradient(135deg, #b81c1c 0%, #5c0d0d 100%); position:relative; overflow:hidden; box-shadow:0 16px 32px rgba(184,28,28,0.28); }
+.rank-row { display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1; }
+.rank-name { font-size:21px; font-weight:800; }
+.rank-sub { font-size:11px; opacity:0.82; margin-top:3px; }
+.rank-badge-img { width:44px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3)); }
+.progress-track { margin-top:16px; height:7px; background: rgba(0,0,0,0.35); border-radius:10px; overflow:hidden; position:relative; z-index:1; }
+.progress-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, #ffb3b3, #ffffff); }
+.quick-stats { display:flex; gap:10px; margin-top:18px; }
+.qstat { flex:1; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:14px 8px; text-align:center; }
+.qstat .num { font-size:17px; font-weight:800; }
+.qstat .lbl { font-size:9.5px; color:#75757c; margin-top:3px; }
+.cta-big { margin-top:26px; width:100%; }
+.quiz-header { display:flex; justify-content:space-between; align-items:center; }
+.qnum { font-size:12px; color:#75757c; font-weight:600; }
+.qcat { font-size:10.5px; background: rgba(196,30,30,0.12); border:1px solid rgba(196,30,30,0.3); padding:5px 12px; border-radius:20px; color:#ff6b6b; font-weight:600; }
+.timer-wrap { display:flex; justify-content:center; margin:26px 0 20px; }
+.timer-ring { position:relative; width:110px; height:110px; }
+.timer-ring svg { transform: rotate(-90deg); }
+.timer-ring .bg { stroke:#1a191e; }
+.timer-ring .fg { stroke:#e83030; stroke-linecap:round; transition: stroke-dashoffset 1s linear; }
+.timer-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; }
+.q-text { text-align:center; font-size:15.5px; font-weight:600; line-height:1.9; padding:0 8px; }
+.options { margin-top:22px; display:flex; flex-direction:column; gap:10px; }
+.opt { background: rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:15px 16px; font-size:13.5px; font-weight:500; display:flex; align-items:center; gap:12px; cursor:pointer; }
+.opt .letter { width:28px; height:28px; border-radius:10px; background: rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; color:#75757c; flex-shrink:0; }
+.opt.correct { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.06); }
+.opt.correct .letter { background:#22c55e; color:#08080a; }
+.opt.wrong { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.06); }
+.opt.wrong .letter { background:#ef4444; color:#08080a; }
+.opt.disabled { pointer-events:none; }
+.res-badge { width:84px; height:84px; margin:8px auto 0; border-radius:50%; background: linear-gradient(135deg, #ffb22d, #c47800); display:flex; align-items:center; justify-content:center; box-shadow:0 0 40px rgba(255,178,45,0.3); }
+.res-title { text-align:center; font-size:18px; font-weight:800; margin-top:16px; }
+.res-sub { text-align:center; font-size:11.5px; color:#75757c; margin-top:5px; }
+.res-score { text-align:center; font-size:40px; font-weight:900; margin-top:14px; color:#ff6b6b; }
+.res-score-label { text-align:center; font-size:10px; color:#75757c; margin-top:-6px; letter-spacing:1px; }
+.res-stats { display:flex; gap:10px; margin-top:20px; }
+.res-stat { flex:1; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:12px 8px; text-align:center; }
+.res-stat .v { font-size:16px; font-weight:800; }
+.res-stat.g .v { color:#22c55e; }
+.res-stat.r .v { color:#ef4444; }
+.res-stat .l { font-size:9px; color:#75757c; margin-top:3px; }
+.res-actions { margin-top:22px; display:flex; flex-direction:column; gap:9px; }
+.err-icon { width:76px; height:76px; border-radius:22px; background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(239,68,68,0.04)); border:1px solid rgba(239,68,68,0.3); display:flex; align-items:center; justify-content:center; margin-bottom:6px; }
+.bottom-nav {
+position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+width: calc(100% - 36px); max-width: 444px;
+background: rgba(20,19,23,0.92); backdrop-filter: blur(20px);
+border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
+padding: 10px 6px; display: none; justify-content: space-around;
+z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.bottom-nav.visible { display: flex; }
+.nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; color:#55555c; background:none; border:none; font-family:inherit; }
+.nav-item.active { color:#f13c3c; }
+.nav-item .nlbl { font-size:9px; font-weight:600; }
+.lb-tabs { display:flex; gap:8px; margin-top:4px; }
+.lb-tab { flex:1; text-align:center; padding:9px; border-radius:12px; font-size:11.5px; font-weight:600; background: rgba(255,255,255,0.03); color:#75757c; border:1px solid rgba(255,255,255,0.06); cursor:pointer; }
+.lb-tab.active { background: linear-gradient(135deg, #e83030, #a31818); color:#fff; border-color: transparent; }
+.lb-list { margin-top:16px; overflow-y:auto; }
+.lb-row { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:16px; margin-bottom:8px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); }
+.lb-row.top1 { background: linear-gradient(135deg, rgba(255,178,45,0.14), rgba(255,178,45,0.02)); border:1px solid rgba(255,178,45,0.3); }
+.lb-row.self { border:1px solid rgba(196,30,30,0.4); background: rgba(196,30,30,0.06); }
+.lb-row .pos { width:20px; font-size:13px; font-weight:800; color:#75757c; text-align:center; }
+.lb-row.top1 .pos { color:#ffb22d; }
+.lb-row .av { width:36px; height:36px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; background: linear-gradient(135deg,#3a3a40,#1e1d22); }
+.lb-row.top1 .av { background: linear-gradient(135deg,#ffb22d,#c47800); color:#1a1200; }
+.lb-row .info { flex:1; }
+.lb-row .uname { font-size:12.5px; font-weight:700; }
+.lb-row .uscore { font-size:12.5px; font-weight:800; color:#ff6b6b; }
+.lb-row.top1 .uscore { color:#ffb22d; }
+.empty-lb { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; padding-top: 40px; }
+.empty-icon { width:64px; height:64px; border-radius:18px; background: rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; }
+.empty-title { font-size:13.5px; font-weight:700; margin-top:8px; }
+.empty-desc { font-size:11px; color:#75757c; line-height:1.8; padding:0 20px; }
+.top-row { display:flex; justify-content:space-between; align-items:center; }
+.iconbtn { width:34px; height:34px; border-radius:10px; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.hero { display:flex; align-items:center; gap:16px; margin-top:16px; }
+.p-avatar { width:78px; height:78px; border-radius:22px; overflow:hidden; box-shadow: 0 0 0 2.5px rgba(196,30,30,0.55); flex-shrink:0; }
+.p-avatar img { width:100%; height:100%; object-fit:cover; }
+.hero-info { flex:1; }
+.p-name { font-size:17px; font-weight:800; }
+.p-rank-chip { display:inline-flex; align-items:center; gap:6px; margin-top:8px; background: linear-gradient(135deg, rgba(196,30,30,0.22), rgba(196,30,30,0.06)); border:1px solid rgba(196,30,30,0.35); padding:4px 12px 4px 8px; border-radius:20px; font-size:11px; font-weight:700; color:#ff6b6b; }
+.p-rank-chip img { width:16px; }
+.p-progress-track { margin-top:16px; height:7px; background: rgba(0,0,0,0.4); border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.05); }
+.p-progress-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, #a31818, #ff6b6b); }
+.p-progress-label { display:flex; justify-content:space-between; font-size:10px; color:#75757c; margin-top:7px; }
+.stats-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:9px; margin-top:18px; }
+.stat-box { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:12px 6px; text-align:center; }
+.stat-box .v { font-size:15px; font-weight:800; }
+.stat-box .l { font-size:9px; color:#75757c; margin-top:3px; }
+.action-card { margin-top:14px; border-radius:18px; padding:15px; position:relative; overflow:hidden; }
+.action-card.invite { background: linear-gradient(135deg, #b81c1c 0%, #5c0d0d 100%); }
+.ac-head { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; }
+.ac-desc { font-size:10.5px; opacity:0.85; margin-top:5px; line-height:1.7; }
+.ac-row { margin-top:12px; display:flex; gap:8px; }
+.ac-input { flex:1; background: rgba(0,0,0,0.28); border:1px solid rgba(255,255,255,0.15); border-radius:11px; padding:10px 12px; font-size:10px; color:#ffd9d9; direction:ltr; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ac-btn { width:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; border:none; background:#fff; color:#a31818; cursor:pointer; flex-shrink:0; }
+.avatar-wrap { position: relative; flex-shrink:0; }
+.edit-pencil {
+position:absolute; bottom:-4px; left:-4px; width:26px; height:26px; border-radius:50%;
+background: linear-gradient(135deg,#e83030,#a31818); border:2.5px solid #08080a;
+display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.av-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-top:18px; }
+.av-cell { aspect-ratio:1; border-radius:16px; overflow:hidden; border:2px solid transparent; cursor:pointer; }
+.av-cell.selected { border-color:#e83030; box-shadow:0 0 14px rgba(232,48,48,0.4); }
+.av-cell img { width:100%; height:100%; object-fit:cover; }
+.settings-group { margin-top:16px; }
+.settings-group-title { font-size:10.5px; color:#666; letter-spacing:1.5px; margin-bottom:8px; padding:0 4px; }
+.settings-row { display:flex; align-items:center; justify-content:space-between; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:13px 14px; margin-bottom:8px; }
+.settings-row .stitle { font-size:12.5px; font-weight:600; }
+.toggle { width:40px; height:23px; border-radius:20px; background:#2a2930; position:relative; flex-shrink:0; cursor:pointer; }
+.toggle.on { background: linear-gradient(135deg, #e83030, #a31818); }
+.toggle-dot { width:17px; height:17px; border-radius:50%; background:#fff; position:absolute; top:3px; right:20px; transition: right 0.2s; }
+.toggle.on .toggle-dot { right:3px; }
+/* ---- team ---- */
+.team-tabs-note{font-size:11px;color:#75757c;text-align:center;margin-top:14px}
+.form-input{width:100%;background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; font-family:inherit; font-size:13px; color:#f5f5f5; margin-bottom:10px; direction:rtl; text-align:right;}
+textarea.form-input{min-height:70px; resize:none;}
+.team-search-row{display:flex; align-items:center; justify-content:space-between; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:12px 14px; margin-bottom:8px;}
+.team-search-row .tn{font-size:12.5px; font-weight:700;}
+.team-search-row .tm{font-size:10px; color:#75757c; margin-top:2px;}
+.team-header-card{margin-top:16px; border-radius:22px; padding:20px; background: linear-gradient(135deg, #b81c1c 0%, #5c0d0d 100%);}
+.team-name-lg{font-size:19px; font-weight:800;}
+.team-desc-sm{font-size:11px; opacity:0.85; margin-top:6px; line-height:1.8;}
+.team-invite-row{margin-top:14px; display:flex; gap:8px;}
+.member-row{display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:11px 12px; margin-bottom:8px;}
+.member-row .mav{width:36px;height:36px;border-radius:11px;overflow:hidden;flex-shrink:0;}
+.member-row .mav img{width:100%;height:100%;object-fit:cover;}
+.member-row .minfo{flex:1;}
+.member-row .mname{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.cmdr-badge{font-size:8.5px; background: rgba(255,178,45,0.18); color:#ffb22d; border:1px solid rgba(255,178,45,0.35); padding:2px 7px; border-radius:8px; font-weight:700;}
+.reserve-badge{font-size:8.5px; background: rgba(255,255,255,0.06); color:#75757c; border:1px solid rgba(255,255,255,0.1); padding:2px 7px; border-radius:8px; font-weight:700;}
+.mission-select{background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#f5f5f5; font-family:inherit; font-size:10.5px; padding:6px 8px;}
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- 1. LOADING -->
-  <div class="screen active" id="screen-loading">
-    <div class="center-flex" style="flex:1">
-      <div class="loading-logo"><img src="assets/logo-circle.jpg" alt=""></div>
-      <div class="spinner"></div>
-      <div class="loading-text">در حال بررسی وضعیت عملیات...</div>
-    </div>
-  </div>
+<!-- 1. LOADING -->
+<div class="screen active" id="screen-loading">
+<div class="center-flex" style="flex:1">
+<div class="loading-logo"><img src="assets/logo-circle.jpg" alt=""></div>
+<div class="spinner"></div>
+<div class="loading-text">در حال بررسی وضعیت عملیات...</div>
+</div>
+</div>
 
-  <!-- 2. FORCE JOIN -->
-  <div class="screen" id="screen-forcejoin">
-    <div class="fj-icon">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="1.8"><path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5Z"/><path d="m9 12 2 2 4-4"/></svg>
-    </div>
-    <div class="fj-title">دسترسی محدود شده</div>
-    <div class="fj-desc">برای ورود به میدان آزمون، ابتدا باید عضو واحد اطلاعاتی DAXOR بشی</div>
-    <div class="fj-channel-card">
-      <img src="assets/logo-circle.jpg" alt="">
-      <div><div class="cn">DAXOR UNIT</div><div class="cs">@Daxor_unit</div></div>
-    </div>
-    <button class="btn btn-primary" style="margin-top:22px" onclick="openChannel()">عضویت در کانال</button>
-    <button class="btn btn-secondary" style="margin-top:10px" onclick="recheckMembership()">بررسی مجدد عضویت</button>
-  </div>
+<!-- 2. FORCE JOIN -->
+<div class="screen" id="screen-forcejoin">
+<div class="fj-icon">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="1.8"><path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5Z"/><path d="m9 12 2 2 4-4"/></svg>
+</div>
+<div class="fj-title">دسترسی محدود شده</div>
+<div class="fj-desc">برای ورود به میدان آزمون، ابتدا باید عضو واحد اطلاعاتی DAXOR بشی</div>
+<div class="fj-channel-card">
+<img src="assets/logo-circle.jpg" alt="">
+<div><div class="cn">DAXOR UNIT</div><div class="cs">@Daxor_unit</div></div>
+</div>
+<button class="btn btn-primary" style="margin-top:22px" onclick="openChannel()">عضویت در کانال</button>
+<button class="btn btn-secondary" style="margin-top:10px" onclick="recheckMembership()">بررسی مجدد عضویت</button>
+</div>
 
-  <!-- 3. COOLDOWN -->
-  <div class="screen" id="screen-cooldown">
-    <div class="cd-icon">
-      <svg width="90" height="90">
-        <circle class="cd-ring-bg" cx="45" cy="45" r="38" fill="none" stroke-width="7"/>
-        <circle class="cd-ring-fg" id="cdRing" cx="45" cy="45" r="38" fill="none" stroke-width="7" stroke-dasharray="239" stroke-dashoffset="0"/>
-      </svg>
-    </div>
-    <div class="cd-title">عملیات بعدی در راهه</div>
-    <div class="cd-timer" id="cdTimerText">۰۰:۰۰:۰۰</div>
-    <div class="cd-desc">تا آماده شدن ۱۰ سوال جدید</div>
-    <button class="btn btn-secondary" style="margin-top:24px" onclick="goHome()">بازگشت به خانه</button>
-  </div>
+<!-- 3. COOLDOWN -->
+<div class="screen" id="screen-cooldown">
+<div class="cd-icon">
+<svg width="90" height="90">
+<circle class="cd-ring-bg" cx="45" cy="45" r="38" fill="none" stroke-width="7"/>
+<circle class="cd-ring-fg" id="cdRing" cx="45" cy="45" r="38" fill="none" stroke-width="7" stroke-dasharray="239" stroke-dashoffset="0"/>
+</svg>
+</div>
+<div class="cd-title">عملیات بعدی در راهه</div>
+<div class="cd-timer" id="cdTimerText">۰۰:۰۰:۰۰</div>
+<div class="cd-desc">تا آماده شدن ۱۰ سوال جدید</div>
+<button class="btn btn-secondary" style="margin-top:24px" onclick="goHome()">بازگشت به خانه</button>
+</div>
 
-  <!-- 4. HOME -->
-  <div class="screen" id="screen-home">
-    <div class="home-top">
-      <div class="greet">
-        <div class="avatar"><img id="homeAvatar" src="assets/avatars/avatar-3.png" alt=""></div>
-        <div class="greet-text"><div class="hi">خوش اومدی</div><div class="name" id="homeName">سرباز</div></div>
-      </div>
-    </div>
-    <div class="rank-card">
-      <div class="rank-row">
-        <div>
-          <div class="rank-name" id="homeRankName">سرباز صفر</div>
-          <div class="rank-sub" id="homeRankSub">تا رتبه بعدی</div>
-        </div>
-        <img class="rank-badge-img" id="homeRankImg" src="assets/ranks/rank-1.png" alt="">
-      </div>
-      <div class="progress-track"><div class="progress-fill" id="homeProgressFill" style="width:0%"></div></div>
-    </div>
-    <div class="quick-stats">
-      <div class="qstat"><div class="num" id="statGames">۰</div><div class="lbl">بازی</div></div>
-      <div class="qstat"><div class="num" id="statInvites">۰</div><div class="lbl">دعوت</div></div>
-      <div class="qstat"><div class="num" id="statScore">۰</div><div class="lbl">امتیاز کل</div></div>
-    </div>
-    <button class="btn btn-primary cta-big" onclick="startGame()">شروع عملیات</button>
-  </div>
+<!-- 4. HOME -->
+<div class="screen" id="screen-home">
+<div class="home-top">
+<div class="greet">
+<div class="avatar"><img id="homeAvatar" src="assets/avatars/avatar-3.png" alt=""></div>
+<div class="greet-text"><div class="hi">خوش اومدی</div><div class="name" id="homeName">سرباز</div></div>
+</div>
+</div>
+<div class="rank-card">
+<div class="rank-row">
+<div>
+<div class="rank-name" id="homeRankName">سرباز صفر</div>
+<div class="rank-sub" id="homeRankSub">تا رتبه بعدی</div>
+</div>
+<img class="rank-badge-img" id="homeRankImg" src="assets/ranks/rank-1.png" alt="">
+</div>
+<div class="progress-track"><div class="progress-fill" id="homeProgressFill" style="width:0%"></div></div>
+</div>
+<div class="quick-stats">
+<div class="qstat"><div class="num" id="statGames">۰</div><div class="lbl">بازی</div></div>
+<div class="qstat"><div class="num" id="statInvites">۰</div><div class="lbl">دعوت</div></div>
+<div class="qstat"><div class="num" id="statScore">۰</div><div class="lbl">امتیاز کل</div></div>
+</div>
+<button class="btn btn-primary cta-big" onclick="startGame()">شروع عملیات</button>
+</div>
 
-  <!-- 5. QUIZ -->
-  <div class="screen" id="screen-quiz">
-    <div class="quiz-header">
-      <div class="qnum" id="quizProgress">سوال ۱ از ۱۰</div>
-      <div class="qcat" id="quizCategory">عمومی</div>
-    </div>
-    <div class="timer-wrap">
-      <div class="timer-ring">
-        <svg width="110" height="110">
-          <circle class="bg" cx="55" cy="55" r="48" fill="none" stroke-width="8"/>
-          <circle class="fg" id="quizRing" cx="55" cy="55" r="48" fill="none" stroke-width="8" stroke-dasharray="301" stroke-dashoffset="0"/>
-        </svg>
-        <div class="timer-num" id="quizTimerNum">۲۰</div>
-      </div>
-    </div>
-    <div class="q-text" id="quizQuestionText">در حال بارگذاری...</div>
-    <div class="options" id="quizOptions"></div>
-  </div>
+<!-- 5. QUIZ -->
+<div class="screen" id="screen-quiz">
+<div class="quiz-header">
+<div class="qnum" id="quizProgress">سوال ۱ از ۱۰</div>
+<div class="qcat" id="quizCategory">عمومی</div>
+</div>
+<div class="timer-wrap">
+<div class="timer-ring">
+<svg width="110" height="110">
+<circle class="bg" cx="55" cy="55" r="48" fill="none" stroke-width="8"/>
+<circle class="fg" id="quizRing" cx="55" cy="55" r="48" fill="none" stroke-width="8" stroke-dasharray="301" stroke-dashoffset="0"/>
+</svg>
+<div class="timer-num" id="quizTimerNum">۲۰</div>
+</div>
+</div>
+<div class="q-text" id="quizQuestionText">در حال بارگذاری...</div>
+<div class="options" id="quizOptions"></div>
+</div>
 
-  <!-- 6. RESULT -->
-  <div class="screen" id="screen-result">
-    <div class="res-badge">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1a1200" stroke-width="2"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg>
-    </div>
-    <div class="res-title">عملیات با موفقیت تکمیل شد</div>
-    <div class="res-sub" id="resSub">۰ از ۱۰ پاسخ صحیح</div>
-    <div class="res-score" id="resScore">۰</div>
-    <div class="res-score-label">امتیاز کسب‌شده</div>
-    <div class="res-stats">
-      <div class="res-stat g"><div class="v" id="resCorrect">۰</div><div class="l">درست</div></div>
-      <div class="res-stat r"><div class="v" id="resWrong">۰</div><div class="l">غلط</div></div>
-      <div class="res-stat"><div class="v" id="resTotal">۰</div><div class="l">کل پاسخ</div></div>
-    </div>
-    <div class="res-actions">
-      <button class="btn btn-primary" onclick="goHome()">بازگشت به خانه</button>
-    </div>
-  </div>
+<!-- 6. RESULT -->
+<div class="screen" id="screen-result">
+<div class="res-badge">
+<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1a1200" stroke-width="2"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg>
+</div>
+<div class="res-title">عملیات با موفقیت تکمیل شد</div>
+<div class="res-sub" id="resSub">۰ از ۱۰ پاسخ صحیح</div>
+<div class="res-score" id="resScore">۰</div>
+<div class="res-score-label">امتیاز کسب‌شده</div>
+<div class="res-stats">
+<div class="res-stat g"><div class="v" id="resCorrect">۰</div><div class="l">درست</div></div>
+<div class="res-stat r"><div class="v" id="resWrong">۰</div><div class="l">غلط</div></div>
+<div class="res-stat"><div class="v" id="resTotal">۰</div><div class="l">کل پاسخ</div></div>
+</div>
+<div class="res-actions">
+<button class="btn btn-primary" onclick="goHome()">بازگشت به خانه</button>
+</div>
+</div>
 
-  <!-- 7. ERROR -->
-  <div class="screen" id="screen-error">
-    <div class="center-flex" style="flex:1">
-      <div class="err-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg></div>
-      <div style="font-size:15.5px;font-weight:800">ارتباط با پایگاه فرماندهی قطع شد</div>
-      <div style="font-size:11.5px;color:#8a8a8f;margin-top:6px;line-height:1.8">اتصال اینترنت خودت رو چک کن و دوباره تلاش کن</div>
-      <button class="btn btn-primary" style="margin-top:20px;width:auto;padding:12px 30px" onclick="init()">تلاش مجدد</button>
-    </div>
-  </div>
+<!-- 7. ERROR -->
+<div class="screen" id="screen-error">
+<div class="center-flex" style="flex:1">
+<div class="err-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg></div>
+<div style="font-size:15.5px;font-weight:800">ارتباط با پایگاه فرماندهی قطع شد</div>
+<div style="font-size:11.5px;color:#8a8a8f;margin-top:6px;line-height:1.8">اتصال اینترنت خودت رو چک کن و دوباره تلاش کن</div>
+<button class="btn btn-primary" style="margin-top:20px;width:auto;padding:12px 30px" onclick="init()">تلاش مجدد</button>
+</div>
+</div>
 
-  <!-- 8. LEADERBOARD -->
-  <div class="screen" id="screen-leaderboard">
-    <div class="page-title" style="margin-bottom:14px">لیدربرد</div>
-    <div class="lb-tabs">
-      <div class="lb-tab" data-period="daily" onclick="switchLbTab('daily')">روزانه</div>
-      <div class="lb-tab active" data-period="weekly" onclick="switchLbTab('weekly')">هفتگی</div>
-      <div class="lb-tab" data-period="alltime" onclick="switchLbTab('alltime')">کلی</div>
-    </div>
-    <div class="lb-list" id="lbList"></div>
-  </div>
+<!-- 8. LEADERBOARD -->
+<div class="screen" id="screen-leaderboard">
+<div class="page-title" style="margin-bottom:14px">لیدربرد</div>
+<div class="lb-tabs">
+<div class="lb-tab" data-period="daily" onclick="switchLbTab('daily')">روزانه</div>
+<div class="lb-tab active" data-period="weekly" onclick="switchLbTab('weekly')">هفتگی</div>
+<div class="lb-tab" data-period="alltime" onclick="switchLbTab('alltime')">کلی</div>
+</div>
+<div class="lb-list" id="lbList"></div>
+</div>
 
-  <!-- 9. PROFILE -->
-  <div class="screen" id="screen-profile">
-    <div class="top-row">
-      <div class="page-title">پروفایل</div>
-      <div class="iconbtn" onclick="showScreen('settings')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </div>
-    </div>
+<!-- 9. PROFILE -->
+<div class="screen" id="screen-profile">
+<div class="top-row">
+<div class="page-title">پروفایل</div>
+<div class="iconbtn" onclick="showScreen('settings')">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+</div>
+</div>
+<div class="hero">
+<div class="avatar-wrap">
+<div class="p-avatar"><img id="profAvatar" src="assets/avatars/avatar-3.png" alt=""></div>
+<div class="edit-pencil" onclick="showScreen('avatarpicker'); buildAvatarGrid();">
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+</div>
+</div>
+<div class="hero-info">
+<div class="p-name" id="profName">سرباز</div>
+<div class="p-rank-chip"><img id="profRankImg" src="assets/ranks/rank-1.png" alt=""><span id="profRankName">سرباز صفر</span></div>
+</div>
+</div>
+<div class="p-progress-track"><div class="p-progress-fill" id="profProgressFill" style="width:0%"></div></div>
+<div class="p-progress-label"><span id="profProgressText">۰ / ۰</span><span id="profNextRankText">تا رتبه بعدی</span></div>
+<div class="stats-grid">
+<div class="stat-box"><div class="v" id="profGames">۰</div><div class="l">بازی</div></div>
+<div class="stat-box"><div class="v" id="profInvites">۰</div><div class="l">دعوت</div></div>
+<div class="stat-box"><div class="v" id="profScore">۰</div><div class="l">امتیاز کل</div></div>
+</div>
+<div class="action-card invite">
+<div class="ac-head">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+دعوت هم‌رزم جدید
+</div>
+<div class="ac-desc">لینکت رو بفرست، وقتی دوستت اولین بازیش رو تموم کنه ۲۰۰ امتیاز می‌گیری</div>
+<div class="ac-row">
+<div class="ac-input" id="inviteLinkText">t.me/DaxorQuizBot</div>
+<button class="ac-btn" onclick="copyInviteLink()">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a31818" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+</button>
+</div>
+</div>
+</div>
 
-    <div class="hero">
-      <div class="avatar-wrap">
-        <div class="p-avatar"><img id="profAvatar" src="assets/avatars/avatar-3.png" alt=""></div>
-        <div class="edit-pencil" onclick="showScreen('avatarpicker'); buildAvatarGrid();">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-        </div>
-      </div>
-      <div class="hero-info">
-        <div class="p-name" id="profName">سرباز</div>
-        <div class="p-rank-chip"><img id="profRankImg" src="assets/ranks/rank-1.png" alt=""><span id="profRankName">سرباز صفر</span></div>
-      </div>
-    </div>
+<!-- 10.b AVATAR PICKER -->
+<div class="screen" id="screen-avatarpicker">
+<div class="back-row">
+<div class="back-btn" onclick="showScreen('profile')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg></div>
+<div class="page-title">انتخاب آواتار</div>
+<div class="spacer34"></div>
+</div>
+<div class="av-grid" id="avGrid"></div>
+</div>
 
-    <div class="p-progress-track"><div class="p-progress-fill" id="profProgressFill" style="width:0%"></div></div>
-    <div class="p-progress-label"><span id="profProgressText">۰ / ۰</span><span id="profNextRankText">تا رتبه بعدی</span></div>
+<!-- 10. SETTINGS -->
+<div class="screen" id="screen-settings">
+<div class="back-row">
+<div class="back-btn" onclick="showScreen('profile')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg></div>
+<div class="page-title">تنظیمات</div>
+<div class="spacer34"></div>
+</div>
+<div class="settings-group">
+<div class="settings-group-title">صدا</div>
+<div class="settings-row">
+<div class="stitle">صدای بازی</div>
+<div class="toggle on" id="soundToggle" onclick="toggleSound()"><div class="toggle-dot"></div></div>
+</div>
+</div>
+</div>
 
-    <div class="stats-grid">
-      <div class="stat-box"><div class="v" id="profGames">۰</div><div class="l">بازی</div></div>
-      <div class="stat-box"><div class="v" id="profInvites">۰</div><div class="l">دعوت</div></div>
-      <div class="stat-box"><div class="v" id="profScore">۰</div><div class="l">امتیاز کل</div></div>
-    </div>
+<!-- 11. TEAM -->
+<div class="screen" id="screen-team">
+<div class="page-title" style="margin-bottom:14px">یگان</div>
 
-    <div class="cat-stats-list" id="profCatStats"></div>
+<div id="teamNoTeamView">
+<div class="lb-tabs">
+<div class="lb-tab active" data-teamtab="create" onclick="switchTeamTab('create')">ساخت یگان</div>
+<div class="lb-tab" data-teamtab="join" onclick="switchTeamTab('join')">پیوستن به یگان</div>
+</div>
 
-    <div class="action-card invite">
-      <div class="ac-head">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        دعوت هم‌رزم جدید
-      </div>
-      <div class="ac-desc">لینکت رو بفرست، وقتی دوستت اولین بازیش رو تموم کنه ۲۰۰ امتیاز می‌گیری</div>
-      <div class="ac-row">
-        <div class="ac-input" id="inviteLinkText">t.me/DaxorQuizBot</div>
-        <button class="ac-btn" onclick="copyInviteLink()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a31818" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
+<div id="teamCreateForm" style="margin-top:16px">
+<input class="form-input" id="teamNameInput" placeholder="اسم یگان">
+<textarea class="form-input" id="teamDescInput" placeholder="توضیحات (اختیاری)"></textarea>
+<button class="btn btn-primary" style="width:100%" onclick="createTeam()">ساخت یگان</button>
+<div id="teamCreateMsg" style="text-align:center;font-size:11px;color:#ff6b6b;margin-top:10px"></div>
+</div>
 
-  <!-- 10.b AVATAR PICKER -->
-  <div class="screen" id="screen-avatarpicker">
-    <div class="back-row">
-      <div class="back-btn" onclick="showScreen('profile')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg></div>
-      <div class="page-title">انتخاب آواتار</div>
-      <div class="spacer34"></div>
-    </div>
-    <div class="av-grid" id="avGrid"></div>
-  </div>
+<div id="teamJoinForm" style="margin-top:16px; display:none">
+<input class="form-input" id="teamSearchInput" placeholder="جستجوی اسم یگان" oninput="searchTeamsDebounced()">
+<div id="teamSearchResults"></div>
+<div class="team-tabs-note">یا با کد دعوت بپیوند</div>
+<div style="display:flex; gap:8px; margin-top:8px">
+<input class="form-input" id="teamInviteCodeInput" placeholder="کد دعوت" style="flex:1; text-align:center; direction:ltr; margin-bottom:0">
+<button class="btn btn-primary" style="width:auto;padding:0 20px" onclick="joinTeamByCode()">پیوستن</button>
+</div>
+<div id="teamJoinMsg" style="text-align:center;font-size:11px;color:#ff6b6b;margin-top:10px"></div>
+</div>
+</div>
 
-  <!-- 11. PUBLIC PROFILE -->
-  <div class="screen" id="screen-publicprofile">
-    <div class="back-row">
-      <div class="back-btn" onclick="showScreen('leaderboard')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg></div>
-      <div class="page-title">پروفایل بازیکن</div>
-      <div class="spacer34"></div>
-    </div>
+<div id="teamDashboardView" style="display:none">
+<div class="team-header-card">
+<div class="team-name-lg" id="teamDashName">—</div>
+<div class="team-desc-sm" id="teamDashDesc"></div>
+<div class="team-invite-row">
+<div class="ac-input" id="teamDashInviteCode" style="flex:1">—</div>
+<button class="ac-btn" onclick="copyTeamInviteCode()">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a31818" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+</button>
+</div>
+</div>
 
-    <div id="pubLoading" class="pub-loading">در حال دریافت اطلاعات...</div>
-    <div id="pubError" class="pub-error" style="display:none">اطلاعات این بازیکن در دسترس نیست</div>
+<div class="quick-stats">
+<div class="qstat"><div class="num" id="teamDashWeeklyXp">۰</div><div class="lbl">XP هفتگی</div></div>
+<div class="qstat"><div class="num" id="teamDashTotalXp">۰</div><div class="lbl">XP کلی</div></div>
+<div class="qstat"><div class="num" id="teamDashMemberCount">۰/۱۰</div><div class="lbl">اعضا</div></div>
+</div>
 
-    <div id="pubContent" class="fade-in" style="display:none">
-      <div class="pub-hero">
-        <div class="pub-avatar"><img id="pubAvatar" src="assets/avatars/avatar-3.png" alt=""></div>
-        <div class="pub-name" id="pubName">کاربر</div>
-        <div class="pub-rank-chip"><img id="pubRankImg" src="assets/ranks/rank-1.png" alt=""><span id="pubRankName">سرباز صفر</span></div>
-      </div>
+<div class="settings-group-title" style="margin-top:20px">اعضای یگان</div>
+<div id="teamMembersList"></div>
 
-      <div class="pub-stats-grid">
-        <div class="stat-box"><div class="v" id="pubRankNameStat">-</div><div class="l">درجه</div></div>
-        <div class="stat-box"><div class="v" id="pubScore">۰</div><div class="l">امتیاز کل</div></div>
-        <div class="stat-box"><div class="v" id="pubGames">۰</div><div class="l">بازی</div></div>
-      </div>
-
-      <div class="pub-section-title">عملکرد تخصصی</div>
-      <div class="cat-stats-list" id="pubCatStats"></div>
-      <div id="pubCatEmpty" class="pub-empty-cats" style="display:none">هنوز آماری برای این بازیکن ثبت نشده</div>
-    </div>
-
-    <button class="btn btn-secondary pub-back-bottom" onclick="showScreen('leaderboard')">بازگشت به لیدربرد</button>
-  </div>
-
-  <!-- 10. SETTINGS -->
-  <div class="screen" id="screen-settings">
-    <div class="back-row">
-      <div class="back-btn" onclick="showScreen('profile')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg></div>
-      <div class="page-title">تنظیمات</div>
-      <div class="spacer34"></div>
-    </div>
-    <div class="settings-group">
-      <div class="settings-group-title">صدا</div>
-      <div class="settings-row">
-        <div class="stitle">صدای بازی</div>
-        <div class="toggle on" id="soundToggle" onclick="toggleSound()"><div class="toggle-dot"></div></div>
-      </div>
-    </div>
-  </div>
+<button class="btn btn-secondary" style="margin-top:14px" onclick="leaveTeam()">ترک یگان</button>
+</div>
+</div>
 
 </div>
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav" id="bottomNav">
-  <button class="nav-item active" data-tab="home" onclick="navTo('home')">
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-    <div class="nlbl">خانه</div>
-  </button>
-  <button class="nav-item" data-tab="leaderboard" onclick="navTo('leaderboard')">
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-    <div class="nlbl">لیدربرد</div>
-  </button>
-  <button class="nav-item" data-tab="profile" onclick="navTo('profile')">
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
-    <div class="nlbl">پروفایل</div>
-  </button>
+<button class="nav-item active" data-tab="home" onclick="navTo('home')">
+<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+<div class="nlbl">خانه</div>
+</button>
+<button class="nav-item" data-tab="leaderboard" onclick="navTo('leaderboard')">
+<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+<div class="nlbl">لیدربرد</div>
+</button>
+<button class="nav-item" data-tab="team" onclick="navTo('team')">
+<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+<div class="nlbl">یگان</div>
+</button>
+<button class="nav-item" data-tab="profile" onclick="navTo('profile')">
+<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+<div class="nlbl">پروفایل</div>
+</button>
 </div>
 
 <script>
@@ -483,22 +473,19 @@ const SUPABASE_URL = "https://nhnfnmphwzjpkcxnpozi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_0IRRaPoORzVgflldy_e0pw_ojXATJaQ";
 const CHANNEL_USERNAME = "Daxor_unit";
 const BOT_USERNAME = "DaxorQuizBot";
-
 const RANK_NAMES = ['سرباز صفر','سرباز دوم','سرباز یکم','سرجوخه','گروهبان سوم','گروهبان دوم','گروهبان یکم',
 'استوار دوم','استوار یکم','ستوان سوم','ستوان دوم','ستوان یکم','سروان','سرگرد','سرهنگ دوم','سرهنگ',
 'سرتیپ دوم','سرتیپ','سرلشکر','سپهبد','ارتشبد'];
 
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
-
 const tgUser = tg?.initDataUnsafe?.user;
 const USER_ID = tgUser?.id || 111222333;
-const USERNAME = tgUser?.first_name || tgUser?.username || "کاربر";
-
+const USERNAME = tgUser?.username || tgUser?.first_name || "کاربر";
 const startParam = tg?.initDataUnsafe?.start_param || "";
 let invitedBy = null;
 if (startParam.startsWith("ref_")) {
-  invitedBy = parseInt(startParam.replace("ref_", ""), 10) || null;
+invitedBy = parseInt(startParam.replace("ref_", ""), 10) || null;
 }
 
 let currentSession = null;
@@ -514,408 +501,515 @@ let soundEnabled = localStorage.getItem("daxor_sound") !== "off";
 // ابزار کمکی
 // ============================================================
 function showScreen(name) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById("screen-" + name).classList.add("active");
-  const navScreens = ["home", "leaderboard", "profile"];
-  const nav = document.getElementById("bottomNav");
-  if (navScreens.includes(name)) {
-    nav.classList.add("visible");
-    document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.tab === name));
-  } else {
-    nav.classList.remove("visible");
-  }
+document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+document.getElementById("screen-" + name).classList.add("active");
+const navScreens = ["home", "leaderboard", "team", "profile"];
+const nav = document.getElementById("bottomNav");
+if (navScreens.includes(name)) {
+nav.classList.add("visible");
+document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.tab === name));
+} else {
+nav.classList.remove("visible");
+}
 }
 
 function navTo(name) {
-  showScreen(name);
-  if (name === "home") loadHomeData();
-  if (name === "leaderboard") loadLeaderboard(currentLbPeriod);
-  if (name === "profile") loadProfileScreen();
+showScreen(name);
+if (name === "home") loadHomeData();
+if (name === "leaderboard") loadLeaderboard(currentLbPeriod);
+if (name === "profile") loadProfileScreen();
+if (name === "team") loadTeamScreen();
 }
 
 function goHome() { navTo("home"); }
 
 function toFa(num) {
-  return String(num).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
+return String(num).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
 }
 
 async function callFunction(name, body) {
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "apikey": SUPABASE_KEY,
-      "Authorization": `Bearer ${SUPABASE_KEY}`,
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok && res.status >= 500) throw new Error("server_error");
-  return res.json();
+const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
+method: "POST",
+headers: {
+"Content-Type": "application/json",
+"apikey": SUPABASE_KEY,
+"Authorization": `Bearer ${SUPABASE_KEY}`,
+},
+body: JSON.stringify(body),
+});
+if (!res.ok && res.status >= 500) throw new Error("server_error");
+return res.json();
 }
 
 function openChannel() {
-  if (tg) tg.openTelegramLink(`https://t.me/${CHANNEL_USERNAME}`);
-  else window.open(`https://t.me/${CHANNEL_USERNAME}`, "_blank");
+if (tg) tg.openTelegramLink(`https://t.me/${CHANNEL_USERNAME}`);
+else window.open(`https://t.me/${CHANNEL_USERNAME}`, "_blank");
 }
 
 function rankImgPath(rankName) {
-  const idx = RANK_NAMES.indexOf(rankName);
-  const num = idx >= 0 ? idx + 1 : 1;
-  return `assets/ranks/rank-${num}.png`;
+const idx = RANK_NAMES.indexOf(rankName);
+const num = idx >= 0 ? idx + 1 : 1;
+return `assets/ranks/rank-${num}.png`;
 }
 
 // ============================================================
 // مسیر اصلی
 // ============================================================
 async function init() {
-  showScreen("loading");
-  try {
-    const membership = await callFunction("check-membership", { telegram_id: USER_ID });
-    if (!membership.is_member) {
-      showScreen("forcejoin");
-      return;
-    }
-    await loadHomeData();
-    showScreen("home");
-  } catch (e) {
-    showScreen("error");
-  }
+showScreen("loading");
+try {
+const membership = await callFunction("check-membership", { telegram_id: USER_ID });
+if (!membership.is_member) {
+showScreen("forcejoin");
+return;
+}
+await loadHomeData();
+showScreen("home");
+} catch (e) {
+showScreen("error");
+}
 }
 
 async function recheckMembership() {
-  showScreen("loading");
-  try {
-    const membership = await callFunction("check-membership", { telegram_id: USER_ID });
-    if (membership.is_member) {
-      await loadHomeData();
-      showScreen("home");
-    } else {
-      showScreen("forcejoin");
-    }
-  } catch (e) {
-    showScreen("error");
-  }
+showScreen("loading");
+try {
+const membership = await callFunction("check-membership", { telegram_id: USER_ID });
+if (membership.is_member) {
+await loadHomeData();
+showScreen("home");
+} else {
+showScreen("forcejoin");
+}
+} catch (e) {
+showScreen("error");
+}
 }
 
 // ============================================================
 // خانه
 // ============================================================
 async function loadHomeData() {
-  try {
-    const profile = await callFunction("get-profile", { telegram_id: USER_ID });
-    document.getElementById("homeName").textContent = profile.username || "سرباز";
-    document.getElementById("homeRankName").textContent = profile.current_rank || "سرباز صفر";
-    document.getElementById("homeRankImg").src = rankImgPath(profile.current_rank);
-    document.getElementById("statGames").textContent = toFa(profile.games_played || 0);
-    document.getElementById("statInvites").textContent = toFa(profile.successful_invites || 0);
-    document.getElementById("statScore").textContent = toFa(profile.total_score || 0);
-    document.getElementById("homeProgressFill").style.width = (profile.progress_percent || 0) + "%";
-    document.getElementById("homeRankSub").textContent = profile.next_rank
-      ? `تا رتبه‌ی بعدی: ${profile.next_rank}` : "بالاترین درجه";
-    currentAvatarIndex = profile.avatar_index || 3;
-    applyAvatarToUI();
-  } catch (e) { /* کاربر جدید، مقادیر پیش‌فرض می‌مونه */ }
+try {
+const profile = await callFunction("get-profile", { telegram_id: USER_ID });
+document.getElementById("homeName").textContent = profile.username || "سرباز";
+document.getElementById("homeRankName").textContent = profile.current_rank || "سرباز صفر";
+document.getElementById("homeRankImg").src = rankImgPath(profile.current_rank);
+document.getElementById("statGames").textContent = toFa(profile.games_played || 0);
+document.getElementById("statInvites").textContent = toFa(profile.successful_invites || 0);
+document.getElementById("statScore").textContent = toFa(profile.total_score || 0);
+document.getElementById("homeProgressFill").style.width = (profile.progress_percent || 0) + "%";
+document.getElementById("homeRankSub").textContent = profile.next_rank
+? `تا رتبه‌ی بعدی: ${profile.next_rank}` : "بالاترین درجه";
+} catch (e) { /* کاربر جدید، مقادیر پیش‌فرض می‌مونه */ }
 }
 
 // ============================================================
 // شروع بازی
 // ============================================================
 async function startGame() {
-  showScreen("loading");
-  document.getElementById("bottomNav").classList.remove("visible");
-  try {
-    const res = await callFunction("start-session", {
-      telegram_id: USER_ID, username: USERNAME, invited_by: invitedBy,
-    });
-    if (!res.allowed) {
-      startCooldownDisplay(res.remaining_seconds || 0);
-      showScreen("cooldown");
-      return;
-    }
-    currentSession = res.session_id;
-    currentQuestions = res.questions;
-    currentQIndex = 0;
-    showQuestion();
-    showScreen("quiz");
-  } catch (e) {
-    showScreen("error");
-  }
+showScreen("loading");
+document.getElementById("bottomNav").classList.remove("visible");
+try {
+const res = await callFunction("start-session", {
+telegram_id: USER_ID, username: USERNAME, invited_by: invitedBy,
+});
+if (!res.allowed) {
+startCooldownDisplay(res.remaining_seconds || 0);
+showScreen("cooldown");
+return;
+}
+currentSession = res.session_id;
+currentQuestions = res.questions;
+currentQIndex = 0;
+showQuestion();
+showScreen("quiz");
+} catch (e) {
+showScreen("error");
+}
 }
 
 function startCooldownDisplay(remainingSeconds) {
-  let remaining = remainingSeconds;
-  const ring = document.getElementById("cdRing");
-  const circumference = 239;
-  function tick() {
-    const h = Math.floor(remaining / 3600);
-    const m = Math.floor((remaining % 3600) / 60);
-    const s = remaining % 60;
-    document.getElementById("cdTimerText").textContent =
-      toFa(String(h).padStart(2, "0")) + ":" + toFa(String(m).padStart(2, "0")) + ":" + toFa(String(s).padStart(2, "0"));
-    const fullDuration = 5 * 3600;
-    const progress = 1 - remaining / fullDuration;
-    ring.style.strokeDashoffset = circumference * (1 - progress);
-    if (remaining <= 0) { clearInterval(timerInterval); goHome(); return; }
-    remaining--;
-  }
-  tick();
-  clearInterval(timerInterval);
-  timerInterval = setInterval(tick, 1000);
+let remaining = remainingSeconds;
+const ring = document.getElementById("cdRing");
+const circumference = 239;
+function tick() {
+const h = Math.floor(remaining / 3600);
+const m = Math.floor((remaining % 3600) / 60);
+const s = remaining % 60;
+document.getElementById("cdTimerText").textContent =
+toFa(String(h).padStart(2, "0")) + ":" + toFa(String(m).padStart(2, "0")) + ":" + toFa(String(s).padStart(2, "0"));
+const fullDuration = 5 * 3600;
+const progress = 1 - remaining / fullDuration;
+ring.style.strokeDashoffset = circumference * (1 - progress);
+if (remaining <= 0) { clearInterval(timerInterval); goHome(); return; }
+remaining--;
+}
+tick();
+clearInterval(timerInterval);
+timerInterval = setInterval(tick, 1000);
 }
 
 function showQuestion() {
-  const q = currentQuestions[currentQIndex];
-  document.getElementById("quizProgress").textContent = `سوال ${toFa(currentQIndex + 1)} از ${toFa(currentQuestions.length)}`;
-  document.getElementById("quizCategory").textContent = q.category || "عمومی";
-  document.getElementById("quizQuestionText").textContent = q.question_text;
-
-  const optsWrap = document.getElementById("quizOptions");
-  optsWrap.innerHTML = "";
-  const letters = ["A", "B", "C", "D"];
-  const options = [q.option_1, q.option_2, q.option_3, q.option_4];
-  options.forEach((optText, idx) => {
-    const div = document.createElement("div");
-    div.className = "opt";
-    div.innerHTML = `<div class="letter">${letters[idx]}</div><div>${optText}</div>`;
-    div.onclick = () => selectAnswer(idx);
-    optsWrap.appendChild(div);
-  });
-
-  questionStartTime = Date.now();
-  startQuestionTimer();
+const q = currentQuestions[currentQIndex];
+document.getElementById("quizProgress").textContent = `سوال ${toFa(currentQIndex + 1)} از ${toFa(currentQuestions.length)}`;
+document.getElementById("quizCategory").textContent = q.category || "عمومی";
+document.getElementById("quizQuestionText").textContent = q.question_text;
+const optsWrap = document.getElementById("quizOptions");
+optsWrap.innerHTML = "";
+const letters = ["A", "B", "C", "D"];
+const options = [q.option_1, q.option_2, q.option_3, q.option_4];
+options.forEach((optText, idx) => {
+const div = document.createElement("div");
+div.className = "opt";
+div.innerHTML = `<div class="letter">${letters[idx]}</div><div>${optText}</div>`;
+div.onclick = () => selectAnswer(idx);
+optsWrap.appendChild(div);
+});
+questionStartTime = Date.now();
+startQuestionTimer();
 }
 
 function startQuestionTimer() {
-  clearInterval(timerInterval);
-  let remaining = QUESTION_SECONDS;
-  const ring = document.getElementById("quizRing");
-  const circumference = 301;
-  document.getElementById("quizTimerNum").textContent = toFa(remaining);
-  ring.style.strokeDashoffset = 0;
-  timerInterval = setInterval(() => {
-    remaining--;
-    document.getElementById("quizTimerNum").textContent = toFa(Math.max(remaining, 0));
-    ring.style.strokeDashoffset = circumference * (1 - remaining / QUESTION_SECONDS);
-    if (remaining <= 0) { clearInterval(timerInterval); selectAnswer(-1); }
-  }, 1000);
+clearInterval(timerInterval);
+let remaining = QUESTION_SECONDS;
+const ring = document.getElementById("quizRing");
+const circumference = 301;
+document.getElementById("quizTimerNum").textContent = toFa(remaining);
+ring.style.strokeDashoffset = 0;
+timerInterval = setInterval(() => {
+remaining--;
+document.getElementById("quizTimerNum").textContent = toFa(Math.max(remaining, 0));
+ring.style.strokeDashoffset = circumference * (1 - remaining / QUESTION_SECONDS);
+if (remaining <= 0) { clearInterval(timerInterval); selectAnswer(-1); }
+}, 1000);
 }
 
 async function selectAnswer(selectedIndex) {
-  clearInterval(timerInterval);
-  const timeTaken = Math.round((Date.now() - questionStartTime) / 1000);
-  const q = currentQuestions[currentQIndex];
-  const opts = document.querySelectorAll(".opt");
-  opts.forEach(o => o.classList.add("disabled"));
-
-  let result;
-  try {
-    result = await callFunction("submit-answer", {
-      session_id: currentSession, question_id: q.id,
-      selected_index: selectedIndex, time_taken_seconds: timeTaken,
-    });
-  } catch (e) { result = { correct_index: -1 }; }
-
-  if (result.correct_index != null && result.correct_index >= 0) {
-    opts[result.correct_index]?.classList.add("correct");
-  }
-  if (selectedIndex >= 0 && selectedIndex !== result.correct_index) {
-    opts[selectedIndex]?.classList.add("wrong");
-  }
-
-  setTimeout(() => {
-    currentQIndex++;
-    if (currentQIndex < currentQuestions.length) showQuestion();
-    else finishGame();
-  }, 1600);
+clearInterval(timerInterval);
+const timeTaken = Math.round((Date.now() - questionStartTime) / 1000);
+const q = currentQuestions[currentQIndex];
+const opts = document.querySelectorAll(".opt");
+opts.forEach(o => o.classList.add("disabled"));
+let result;
+try {
+result = await callFunction("submit-answer", {
+session_id: currentSession, question_id: q.id,
+selected_index: selectedIndex, time_taken_seconds: timeTaken,
+});
+} catch (e) { result = { correct_index: -1 }; }
+if (result.correct_index != null && result.correct_index >= 0) {
+opts[result.correct_index]?.classList.add("correct");
+}
+if (selectedIndex >= 0 && selectedIndex !== result.correct_index) {
+opts[selectedIndex]?.classList.add("wrong");
+}
+setTimeout(() => {
+currentQIndex++;
+if (currentQIndex < currentQuestions.length) showQuestion();
+else finishGame();
+}, 1600);
 }
 
 async function finishGame() {
-  showScreen("loading");
-  try {
-    const res = await callFunction("finish-session", { session_id: currentSession });
-    document.getElementById("resScore").textContent = toFa(res.score || 0);
-    document.getElementById("resSub").textContent = `${toFa(res.correct_count || 0)} از ${toFa(res.total_answered || 0)} پاسخ صحیح`;
-    document.getElementById("resCorrect").textContent = toFa(res.correct_count || 0);
-    document.getElementById("resWrong").textContent = toFa(res.wrong_count || 0);
-    document.getElementById("resTotal").textContent = toFa(res.total_answered || 0);
-    showScreen("result");
-  } catch (e) { showScreen("error"); }
+showScreen("loading");
+try {
+const res = await callFunction("finish-session", { session_id: currentSession });
+document.getElementById("resScore").textContent = toFa(res.score || 0);
+document.getElementById("resSub").textContent = `${toFa(res.correct_count || 0)} از ${toFa(res.total_answered || 0)} پاسخ صحیح`;
+document.getElementById("resCorrect").textContent = toFa(res.correct_count || 0);
+document.getElementById("resWrong").textContent = toFa(res.wrong_count || 0);
+document.getElementById("resTotal").textContent = toFa(res.total_answered || 0);
+showScreen("result");
+} catch (e) { showScreen("error"); }
 }
 
 // ============================================================
 // لیدربرد
 // ============================================================
 function switchLbTab(period) {
-  currentLbPeriod = period;
-  document.querySelectorAll(".lb-tab").forEach(t => t.classList.toggle("active", t.dataset.period === period));
-  loadLeaderboard(period);
+currentLbPeriod = period;
+document.querySelectorAll(".lb-tab").forEach(t => t.classList.toggle("active", t.dataset.period === period));
+loadLeaderboard(period);
 }
 
 async function loadLeaderboard(period) {
-  const list = document.getElementById("lbList");
-  list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">در حال بارگذاری...</div>';
-  try {
-    const res = await callFunction("get-leaderboard", { telegram_id: USER_ID, period });
-    const rows = res.leaderboard || [];
-    if (rows.length === 0) {
-      list.innerHTML = `
-        <div class="empty-lb">
-          <div class="empty-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
-          <div class="empty-title">هنوز رتبه‌ای ثبت نشده</div>
-          <div class="empty-desc">اولین عملیات رو انجام بده و جایگاهت رو باز کن</div>
-        </div>`;
-      return;
-    }
-    list.innerHTML = rows.map(r => {
-      const isSelf = r.telegram_id === USER_ID;
-      const cls = r.rank === 1 ? "top1" : (isSelf ? "self" : "");
-      const avImg = avatarPath(r.avatar_index || 3);
-      return `<div class="lb-row ${cls}" onclick="openPublicProfile(${r.telegram_id})">
-        <div class="pos">${toFa(r.rank)}</div>
-        <div class="av"><img src="${avImg}" alt=""></div>
-        <div class="info"><div class="uname">${isSelf ? "شما" : r.username}</div></div>
-        <div class="uscore">${toFa(r.score)}</div>
-      </div>`;
-    }).join("");
-  } catch (e) {
-    list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">خطا در بارگذاری</div>';
-  }
+const list = document.getElementById("lbList");
+list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">در حال بارگذاری...</div>';
+try {
+const res = await callFunction("get-leaderboard", { telegram_id: USER_ID, period });
+const rows = res.leaderboard || [];
+if (rows.length === 0) {
+list.innerHTML = `
+<div class="empty-lb">
+<div class="empty-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+<div class="empty-title">هنوز رتبه‌ای ثبت نشده</div>
+<div class="empty-desc">اولین عملیات رو انجام بده و جایگاهت رو باز کن</div>
+</div>`;
+return;
+}
+list.innerHTML = rows.map(r => {
+const isSelf = r.telegram_id === USER_ID;
+const cls = r.rank === 1 ? "top1" : (isSelf ? "self" : "");
+const initials = (r.username || "کا").slice(0, 2);
+return `<div class="lb-row ${cls}">
+<div class="pos">${toFa(r.rank)}</div>
+<div class="av">${initials}</div>
+<div class="info"><div class="uname">${isSelf ? "شما" : r.username}</div></div>
+<div class="uscore">${toFa(r.score)}</div>
+</div>`;
+}).join("");
+} catch (e) {
+list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">خطا در بارگذاری</div>';
+}
 }
 
 // ============================================================
 // پروفایل
 // ============================================================
 async function loadProfileScreen() {
-  try {
-    const profile = await callFunction("get-profile", { telegram_id: USER_ID });
-    document.getElementById("profName").textContent = profile.username || "سرباز";
-    document.getElementById("profRankName").textContent = profile.current_rank || "سرباز صفر";
-    document.getElementById("profRankImg").src = rankImgPath(profile.current_rank);
-    document.getElementById("profGames").textContent = toFa(profile.games_played || 0);
-    document.getElementById("profInvites").textContent = toFa(profile.successful_invites || 0);
-    document.getElementById("profScore").textContent = toFa(profile.total_score || 0);
-    document.getElementById("profProgressFill").style.width = (profile.progress_percent || 0) + "%";
-    document.getElementById("profProgressText").textContent = `${toFa(profile.total_score || 0)} / ${toFa(profile.next_rank_min_score || profile.total_score || 0)}`;
-    document.getElementById("profNextRankText").textContent = profile.next_rank ? `تا ${profile.next_rank}` : "بالاترین درجه";
-    document.getElementById("inviteLinkText").textContent = `t.me/${BOT_USERNAME}?start=ref_${USER_ID}`;
-    currentAvatarIndex = profile.avatar_index || 3;
-    applyAvatarToUI();
-    renderCategoryStats("profCatStats", profile.category_stats);
-  } catch (e) { /* مقادیر پیش‌فرض می‌مونه */ }
+try {
+const profile = await callFunction("get-profile", { telegram_id: USER_ID });
+document.getElementById("profName").textContent = profile.username || "سرباز";
+document.getElementById("profRankName").textContent = profile.current_rank || "سرباز صفر";
+document.getElementById("profRankImg").src = rankImgPath(profile.current_rank);
+document.getElementById("profGames").textContent = toFa(profile.games_played || 0);
+document.getElementById("profInvites").textContent = toFa(profile.successful_invites || 0);
+document.getElementById("profScore").textContent = toFa(profile.total_score || 0);
+document.getElementById("profProgressFill").style.width = (profile.progress_percent || 0) + "%";
+document.getElementById("profProgressText").textContent = `${toFa(profile.total_score || 0)} / ${toFa(profile.next_rank_min_score || profile.total_score || 0)}`;
+document.getElementById("profNextRankText").textContent = profile.next_rank ? `تا ${profile.next_rank}` : "بالاترین درجه";
+document.getElementById("inviteLinkText").textContent = `t.me/${BOT_USERNAME}?start=ref_${USER_ID}`;
+} catch (e) { /* مقادیر پیش‌فرض می‌مونه */ }
 }
 
 function copyInviteLink() {
-  const link = `https://t.me/${BOT_USERNAME}?start=ref_${USER_ID}`;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(link).then(() => {
-      if (tg) tg.showAlert("لینک دعوت کپی شد ✅");
-    });
-  }
+const link = `https://t.me/${BOT_USERNAME}?start=ref_${USER_ID}`;
+if (navigator.clipboard) {
+navigator.clipboard.writeText(link).then(() => {
+if (tg) tg.showAlert("لینک دعوت کپی شد ✅");
+});
+}
 }
 
 // ============================================================
 // انتخاب آواتار
 // ============================================================
 const AVATAR_COUNT = 20;
-let currentAvatarIndex = 3;
+function getSelectedAvatar() {
+return localStorage.getItem("daxor_avatar") || "3";
+}
 function avatarPath(n) {
-  return `assets/avatars/avatar-${n}.png`;
+return `assets/avatars/avatar-${n}.png`;
 }
 function applyAvatarToUI() {
-  const path = avatarPath(currentAvatarIndex);
-  const homeImg = document.getElementById("homeAvatar");
-  const profImg = document.getElementById("profAvatar");
-  if (homeImg) homeImg.src = path;
-  if (profImg) profImg.src = path;
+const n = getSelectedAvatar();
+const path = avatarPath(n);
+const homeImg = document.getElementById("homeAvatar");
+const profImg = document.getElementById("profAvatar");
+if (homeImg) homeImg.src = path;
+if (profImg) profImg.src = path;
 }
 function buildAvatarGrid() {
-  const grid = document.getElementById("avGrid");
-  let html = "";
-  for (let i = 1; i <= AVATAR_COUNT; i++) {
-    const sel = i === currentAvatarIndex ? " selected" : "";
-    html += `<div class="av-cell${sel}" onclick="selectAvatar(${i})"><img src="${avatarPath(i)}"></div>`;
-  }
-  grid.innerHTML = html;
+const grid = document.getElementById("avGrid");
+const selected = getSelectedAvatar();
+let html = "";
+for (let i = 1; i <= AVATAR_COUNT; i++) {
+const sel = String(i) === selected ? " selected" : "";
+html += `<div class="av-cell${sel}" onclick="selectAvatar(${i})"><img src="${avatarPath(i)}"></div>`;
 }
-async function selectAvatar(n) {
-  currentAvatarIndex = n;
-  applyAvatarToUI();
-  showScreen("profile");
-  try {
-    await callFunction("update-avatar", { telegram_id: USER_ID, avatar_index: n });
-  } catch (e) { /* دفعه بعد که پروفایل لود بشه اصلاح میشه */ }
+grid.innerHTML = html;
 }
-
-// ============================================================
-// آمار دسته‌بندی (مشترک بین پروفایل خودم و پروفایل عمومی)
-// ============================================================
-function renderCategoryStats(containerId, stats) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  if (!stats || stats.length === 0) { el.innerHTML = ""; return; }
-  el.innerHTML = stats.map(s => {
-    const pct = Math.round(s.percent ?? 0);
-    return `<div class="cat-stat-row">
-      <div class="cat-stat-top"><span>${s.category}</span><span>${toFa(pct)}٪ (${toFa(s.correct_count)}/${toFa(s.total_count)})</span></div>
-      <div class="cat-stat-bar-track"><div class="cat-stat-bar-fill" style="width:${pct}%"></div></div>
-    </div>`;
-  }).join("");
-}
-
-// ============================================================
-// پروفایل عمومی (نمایش پروفایل بقیه‌ی بازیکن‌ها)
-// ============================================================
-async function openPublicProfile(telegramId) {
-  showScreen("publicprofile");
-  const loadingEl = document.getElementById("pubLoading");
-  const errorEl = document.getElementById("pubError");
-  const contentEl = document.getElementById("pubContent");
-  const catEmptyEl = document.getElementById("pubCatEmpty");
-
-  loadingEl.style.display = "block";
-  errorEl.style.display = "none";
-  contentEl.style.display = "none";
-
-  try {
-    const p = await callFunction("get-public-profile", { telegram_id: telegramId });
-    if (!p || p.error) throw new Error("not_found");
-
-    document.getElementById("pubAvatar").src = avatarPath(p.avatar_index || 3);
-    document.getElementById("pubName").textContent = p.username || "کاربر";
-    document.getElementById("pubRankName").textContent = p.current_rank || "سرباز صفر";
-    document.getElementById("pubRankImg").src = rankImgPath(p.current_rank);
-    document.getElementById("pubRankNameStat").textContent = p.current_rank || "سرباز صفر";
-    document.getElementById("pubScore").textContent = toFa(p.total_score || 0);
-    document.getElementById("pubGames").textContent = toFa(p.games_played || 0);
-
-    const stats = p.category_stats || [];
-    renderCategoryStats("pubCatStats", stats);
-    catEmptyEl.style.display = stats.length === 0 ? "block" : "none";
-
-    loadingEl.style.display = "none";
-    contentEl.style.display = "block";
-  } catch (e) {
-    loadingEl.style.display = "none";
-    errorEl.style.display = "block";
-  }
+function selectAvatar(n) {
+localStorage.setItem("daxor_avatar", String(n));
+applyAvatarToUI();
+showScreen("profile");
 }
 
 // ============================================================
 // تنظیمات
 // ============================================================
 function toggleSound() {
-  soundEnabled = !soundEnabled;
-  localStorage.setItem("daxor_sound", soundEnabled ? "on" : "off");
-  document.getElementById("soundToggle").classList.toggle("on", soundEnabled);
+soundEnabled = !soundEnabled;
+localStorage.setItem("daxor_sound", soundEnabled ? "on" : "off");
+document.getElementById("soundToggle").classList.toggle("on", soundEnabled);
 }
+
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("soundToggle")?.classList.toggle("on", soundEnabled);
+document.getElementById("soundToggle")?.classList.toggle("on", soundEnabled);
 });
+
+// ============================================================
+// یگان
+// ============================================================
+const TEAM_CATEGORY_LABELS = {
+doctrine: "دکترین", air: "هوایی", ground: "زمینی", navy: "دریایی",
+air_defense: "پدافند", missile: "موشکی", intel: "اطلاعاتی", historical: "تاریخی",
+};
+let currentTeamTab = "create";
+let teamSearchTimeout = null;
+let myTeamData = null;
+
+function switchTeamTab(tab) {
+currentTeamTab = tab;
+document.querySelectorAll("[data-teamtab]").forEach(t => t.classList.toggle("active", t.dataset.teamtab === tab));
+document.getElementById("teamCreateForm").style.display = tab === "create" ? "block" : "none";
+document.getElementById("teamJoinForm").style.display = tab === "join" ? "block" : "none";
+}
+
+async function loadTeamScreen() {
+document.getElementById("teamNoTeamView").style.display = "none";
+document.getElementById("teamDashboardView").style.display = "none";
+try {
+const res = await callFunction("get-my-team", { telegram_id: USER_ID });
+if (res.team) {
+myTeamData = res;
+renderTeamDashboard(res);
+document.getElementById("teamDashboardView").style.display = "block";
+} else {
+document.getElementById("teamNoTeamView").style.display = "block";
+}
+} catch (e) {
+document.getElementById("teamNoTeamView").style.display = "block";
+}
+}
+
+async function createTeam() {
+const name = document.getElementById("teamNameInput").value.trim();
+const description = document.getElementById("teamDescInput").value.trim();
+const msg = document.getElementById("teamCreateMsg");
+msg.textContent = "";
+if (!name) { msg.textContent = "اسم یگان رو وارد کن"; return; }
+try {
+const res = await callFunction("create-team", { telegram_id: USER_ID, team_name: name, description });
+if (res.error) { msg.textContent = res.error; return; }
+await loadTeamScreen();
+} catch (e) { msg.textContent = "خطا در ساخت یگان"; }
+}
+
+function searchTeamsDebounced() {
+clearTimeout(teamSearchTimeout);
+teamSearchTimeout = setTimeout(searchTeams, 400);
+}
+
+async function searchTeams() {
+const q = document.getElementById("teamSearchInput").value.trim();
+const wrap = document.getElementById("teamSearchResults");
+if (!q) { wrap.innerHTML = ""; return; }
+try {
+const res = await fetch(`${SUPABASE_URL}/functions/v1/search-teams?q=${encodeURIComponent(q)}`, {
+headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` },
+});
+const data = await res.json();
+const teams = data.teams || [];
+if (teams.length === 0) {
+wrap.innerHTML = '<div style="text-align:center;color:#666;font-size:11px;padding:14px 0">یگانی پیدا نشد</div>';
+return;
+}
+wrap.innerHTML = teams.map(t => `
+<div class="team-search-row">
+<div><div class="tn">${t.name}</div><div class="tm">${toFa(t.member_count)}/۱۰ عضو</div></div>
+<button class="btn btn-secondary" style="width:auto;padding:9px 16px" onclick="joinTeamById('${t.id}')">پیوستن</button>
+</div>`).join("");
+} catch (e) {
+wrap.innerHTML = '<div style="text-align:center;color:#666;font-size:11px;padding:14px 0">خطا در جستجو</div>';
+}
+}
+
+async function joinTeamById(teamId) {
+const msg = document.getElementById("teamJoinMsg");
+try {
+const res = await callFunction("join-team", { telegram_id: USER_ID, team_id: teamId });
+if (res.error) { msg.textContent = res.error; return; }
+await loadTeamScreen();
+} catch (e) { msg.textContent = "خطا در پیوستن به یگان"; }
+}
+
+async function joinTeamByCode() {
+const code = document.getElementById("teamInviteCodeInput").value.trim();
+const msg = document.getElementById("teamJoinMsg");
+msg.textContent = "";
+if (!code) { msg.textContent = "کد دعوت رو وارد کن"; return; }
+try {
+const res = await callFunction("join-team", { telegram_id: USER_ID, invite_code: code });
+if (res.error) { msg.textContent = res.error; return; }
+await loadTeamScreen();
+} catch (e) { msg.textContent = "خطا در پیوستن به یگان"; }
+}
+
+function renderTeamDashboard(data) {
+const { team, members } = data;
+document.getElementById("teamDashName").textContent = team.name;
+document.getElementById("teamDashDesc").textContent = team.description || "بدون توضیحات";
+document.getElementById("teamDashInviteCode").textContent = team.invite_code;
+document.getElementById("teamDashWeeklyXp").textContent = toFa(team.weekly_xp || 0);
+document.getElementById("teamDashTotalXp").textContent = toFa(team.total_xp || 0);
+document.getElementById("teamDashMemberCount").textContent = `${toFa(members.length)}/۱۰`;
+
+const isCommander = team.commander_telegram_id === USER_ID;
+const list = document.getElementById("teamMembersList");
+list.innerHTML = members.map(m => {
+const missionLabel = m.mission_category ? TEAM_CATEGORY_LABELS[m.mission_category] : "بدون ماموریت";
+const badges = `${m.is_commander ? '<span class="cmdr-badge">فرمانده</span>' : ""}${!m.is_active_roster ? '<span class="reserve-badge">ذخیره</span>' : ""}`;
+const missionControl = isCommander && !m.is_commander
+? `<select class="mission-select" onchange="assignMission(${m.telegram_id}, this.value)">
+<option value="">بدون ماموریت</option>
+${Object.entries(TEAM_CATEGORY_LABELS).map(([k, v]) =>
+`<option value="${k}" ${m.mission_category === k ? "selected" : ""}>${v}</option>`).join("")}
+</select>`
+: `<span style="font-size:10.5px;color:#75757c">${missionLabel}</span>`;
+
+return `<div class="member-row">
+<div class="mav"><img src="assets/avatars/avatar-${m.avatar_index}.png"></div>
+<div class="minfo">
+<div class="mname">${m.username} ${badges}</div>
+</div>
+${missionControl}
+</div>`;
+}).join("");
+}
+
+async function assignMission(memberTelegramId, category) {
+try {
+await callFunction("assign-mission", {
+commander_telegram_id: USER_ID,
+member_telegram_id: memberTelegramId,
+mission_category: category || null,
+});
+await loadTeamScreen();
+} catch (e) { /* silent */ }
+}
+
+async function leaveTeam() {
+const doIt = async () => { await doLeaveTeam(); };
+if (tg) {
+tg.showConfirm("مطمئنی می‌خوای یگان رو ترک کنی؟", async (ok) => { if (ok) await doIt(); });
+} else if (confirm("مطمئنی می‌خوای یگان رو ترک کنی؟")) {
+await doIt();
+}
+}
+
+async function doLeaveTeam() {
+try {
+const res = await callFunction("leave-team", { telegram_id: USER_ID });
+if (res.error) { if (tg) tg.showAlert(res.error); else alert(res.error); return; }
+await loadTeamScreen();
+} catch (e) { /* silent */ }
+}
+
+function copyTeamInviteCode() {
+const code = document.getElementById("teamDashInviteCode").textContent;
+if (navigator.clipboard) {
+navigator.clipboard.writeText(code).then(() => {
+if (tg) tg.showAlert("کد دعوت کپی شد ✅");
+});
+}
+}
 
 // ============================================================
 // شروع
 // ============================================================
+applyAvatarToUI();
 init();
 </script>
 </body>
-          </html>
+  </html>
