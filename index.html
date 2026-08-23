@@ -493,7 +493,7 @@ if (tg) { tg.ready(); tg.expand(); }
 
 const tgUser = tg?.initDataUnsafe?.user;
 const USER_ID = tgUser?.id || 111222333;
-const USERNAME = tgUser?.username || tgUser?.first_name || "کاربر";
+const USERNAME = tgUser?.first_name || tgUser?.username || "کاربر";
 
 const startParam = tg?.initDataUnsafe?.start_param || "";
 let invitedBy = null;
@@ -918,4 +918,4 @@ document.addEventListener("DOMContentLoaded", () => {
 init();
 </script>
 </body>
-    </html>
+          </html>
