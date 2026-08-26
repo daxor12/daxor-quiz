@@ -292,6 +292,7 @@
       <div class="qstat"><div class="num" id="statGames">۰</div><div class="lbl">بازی</div></div>
       <div class="qstat"><div class="num" id="statInvites">۰</div><div class="lbl">دعوت</div></div>
       <div class="qstat"><div class="num" id="statScore">۰</div><div class="lbl">امتیاز کل</div></div>
+      <div class="qstat"><div class="num" id="statCoins">۰</div><div class="lbl">غنیمت</div></div>
     </div>
     <button class="btn btn-primary cta-big" onclick="startGame()">شروع عملیات</button>
   </div>
@@ -373,7 +374,13 @@
       </div>
       <div class="hero-info">
         <div class="p-name" id="profName">سرباز</div>
-        <div class="p-rank-chip"><img id="profRankImg" src="assets/ranks/rank-1.png" alt=""><span id="profRankName">سرباز صفر</span></div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px">
+          <div class="p-rank-chip" style="margin-top:0"><img id="profRankImg" src="assets/ranks/rank-1.png" alt=""><span id="profRankName">سرباز صفر</span></div>
+          <div class="p-rank-chip" style="margin-top:0; background: linear-gradient(135deg, rgba(255,178,45,0.22), rgba(255,178,45,0.06)); border-color: rgba(255,178,45,0.35); color:#ffb22d;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffb22d" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9 10h6"/></svg>
+            <span id="profCoins">۰ سکه</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -663,6 +670,7 @@ async function loadHomeData() {
     document.getElementById("homeProgressFill").style.width = (profile.progress_percent || 0) + "%";
     document.getElementById("homeRankSub").textContent = profile.next_rank
       ? `تا رتبه‌ی بعدی: ${profile.next_rank}` : "بالاترین درجه";
+    document.getElementById("statCoins").textContent = toFa(profile.coins || 0);
     currentAvatarIndex = profile.avatar_index || 3;
     applyAvatarToUI();
   } catch (e) { /* کاربر جدید، مقادیر پیش‌فرض می‌مونه */ }
@@ -840,6 +848,7 @@ async function loadProfileScreen() {
     document.getElementById("profProgressText").textContent = `${toFa(profile.total_score || 0)} / ${toFa(profile.next_rank_min_score || profile.total_score || 0)}`;
     document.getElementById("profNextRankText").textContent = profile.next_rank ? `تا ${profile.next_rank}` : "بالاترین درجه";
     document.getElementById("inviteLinkText").textContent = `t.me/${BOT_USERNAME}?start=ref_${USER_ID}`;
+    document.getElementById("profCoins").textContent = `${toFa(profile.coins || 0)} سکه`;
     currentAvatarIndex = profile.avatar_index || 3;
     applyAvatarToUI();
     renderCategoryStats("profCatStats", profile.category_stats);
@@ -1109,4 +1118,4 @@ function copyTeamInviteCode() {
 init();
 </script>
 </body>
-        </html>
+      </html>
