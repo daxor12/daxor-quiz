@@ -284,7 +284,10 @@
           <div class="rank-name" id="homeRankName">سرباز صفر</div>
           <div class="rank-sub" id="homeRankSub">تا رتبه بعدی</div>
         </div>
-        <img class="rank-badge-img" id="homeRankImg" src="assets/ranks/rank-1.png" alt="">
+        <div style="text-align:center; position:relative; z-index:1">
+          <img class="rank-badge-img" id="homeRankImg" src="assets/ranks/rank-1.png" alt="">
+          <div style="margin-top:6px; font-size:10.5px; font-weight:800; background: rgba(0,0,0,0.3); border-radius:10px; padding:3px 10px;">Lv <span id="homeLevel">۱</span></div>
+        </div>
       </div>
       <div class="progress-track"><div class="progress-fill" id="homeProgressFill" style="width:0%"></div></div>
     </div>
@@ -379,6 +382,10 @@
           <div class="p-rank-chip" style="margin-top:0; background: linear-gradient(135deg, rgba(255,178,45,0.22), rgba(255,178,45,0.06)); border-color: rgba(255,178,45,0.35); color:#ffb22d;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffb22d" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9 10h6"/></svg>
             <span id="profCoins">۰ سکه</span>
+          </div>
+          <div class="p-rank-chip" style="margin-top:0; background: linear-gradient(135deg, rgba(59,130,246,0.22), rgba(59,130,246,0.06)); border-color: rgba(59,130,246,0.35); color:#7cb0ff;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7cb0ff" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span>Lv <span id="profLevel">۱</span></span>
           </div>
         </div>
       </div>
@@ -671,6 +678,7 @@ async function loadHomeData() {
     document.getElementById("homeRankSub").textContent = profile.next_rank
       ? `تا رتبه‌ی بعدی: ${profile.next_rank}` : "بالاترین درجه";
     document.getElementById("statCoins").textContent = toFa(profile.coins || 0);
+    document.getElementById("homeLevel").textContent = toFa(profile.level || 1);
     currentAvatarIndex = profile.avatar_index || 3;
     applyAvatarToUI();
   } catch (e) { /* کاربر جدید، مقادیر پیش‌فرض می‌مونه */ }
@@ -849,6 +857,7 @@ async function loadProfileScreen() {
     document.getElementById("profNextRankText").textContent = profile.next_rank ? `تا ${profile.next_rank}` : "بالاترین درجه";
     document.getElementById("inviteLinkText").textContent = `t.me/${BOT_USERNAME}?start=ref_${USER_ID}`;
     document.getElementById("profCoins").textContent = `${toFa(profile.coins || 0)} سکه`;
+    document.getElementById("profLevel").textContent = toFa(profile.level || 1);
     currentAvatarIndex = profile.avatar_index || 3;
     applyAvatarToUI();
     renderCategoryStats("profCatStats", profile.category_stats);
@@ -1118,4 +1127,4 @@ function copyTeamInviteCode() {
 init();
 </script>
 </body>
-      </html>
+                                                                                                     </html>
