@@ -219,14 +219,17 @@
   .team-name-lg{font-size:19px; font-weight:800;}
   .team-desc-sm{font-size:11px; opacity:0.85; margin-top:6px; line-height:1.8;}
   .team-invite-row{margin-top:14px; display:flex; gap:8px;}
-  .member-row{display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:11px 12px; margin-bottom:8px;}
+  .member-row{display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:11px 12px; margin-bottom:8px; cursor:pointer;}
   .member-row .mav{width:36px;height:36px;border-radius:11px;overflow:hidden;flex-shrink:0;}
   .member-row .mav img{width:100%;height:100%;object-fit:cover;}
-  .member-row .minfo{flex:1;}
+  .member-row .minfo{flex:1; min-width:0;}
   .member-row .mname{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .member-row .msub{font-size:10px; color:#75757c; margin-top:3px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
   .cmdr-badge{font-size:8.5px; background: rgba(255,178,45,0.18); color:#ffb22d; border:1px solid rgba(255,178,45,0.35); padding:2px 7px; border-radius:8px; font-weight:700;}
   .reserve-badge{font-size:8.5px; background: rgba(255,255,255,0.06); color:#75757c; border:1px solid rgba(255,255,255,0.1); padding:2px 7px; border-radius:8px; font-weight:700;}
   .mission-select{background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#f5f5f5; font-family:inherit; font-size:10.5px; padding:6px 8px;}
+  .member-controls{display:flex; flex-direction:column; align-items:flex-end; gap:6px;}
+  .remove-member-btn{width:26px; height:26px; border-radius:9px; background: rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -1070,19 +1073,29 @@ function renderTeamDashboard(data) {
     const missionLabel = m.mission_category ? TEAM_CATEGORY_LABELS[m.mission_category] : "بدون ماموریت";
     const badges = `${m.is_commander ? '<span class="cmdr-badge">فرمانده</span>' : ""}${!m.is_active_roster ? '<span class="reserve-badge">ذخیره</span>' : ""}`;
     const missionControl = isCommander && !m.is_commander
-      ? `<select class="mission-select" onchange="assignMission(${m.telegram_id}, this.value)">
+      ? `<select class="mission-select" onchange="assignMission(${m.telegram_id}, this.value)" onclick="event.stopPropagation()">
           <option value="">بدون ماموریت</option>
           ${Object.entries(TEAM_CATEGORY_LABELS).map(([k, v]) =>
             `<option value="${k}" ${m.mission_category === k ? "selected" : ""}>${v}</option>`).join("")}
         </select>`
       : `<span style="font-size:10.5px;color:#75757c">${missionLabel}</span>`;
 
-    return `<div class="member-row">
+    const removeBtn = isCommander && !m.is_commander
+      ? `<div class="remove-member-btn" onclick="event.stopPropagation(); removeMember(${m.telegram_id})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </div>`
+      : "";
+
+    return `<div class="member-row" onclick="openPublicProfile(${m.telegram_id})">
       <div class="mav"><img src="${avatarPath(m.avatar_index || 3)}"></div>
       <div class="minfo">
         <div class="mname">${m.username} ${badges}</div>
+        <div class="msub"><span>Lv ${toFa(m.level ?? 1)}</span><span>${toFa(m.total_score ?? 0)} امتیاز</span></div>
       </div>
-      ${missionControl}
+      <div class="member-controls">
+        ${removeBtn}
+        ${missionControl}
+      </div>
     </div>`;
   }).join("");
 }
@@ -1096,6 +1109,24 @@ async function assignMission(memberTelegramId, category) {
     });
     await loadTeamScreen();
   } catch (e) { /* silent */ }
+}
+
+async function removeMember(memberTelegramId) {
+  const doIt = async () => {
+    try {
+      const res = await callFunction("remove-member", {
+        commander_telegram_id: USER_ID,
+        member_telegram_id: memberTelegramId,
+      });
+      if (res.error) { if (tg) tg.showAlert(res.error); else alert(res.error); return; }
+      await loadTeamScreen();
+    } catch (e) { /* silent */ }
+  };
+  if (tg) {
+    tg.showConfirm("مطمئنی می‌خوای این عضو رو از یگان حذف کنی؟", async (ok) => { if (ok) await doIt(); });
+  } else if (confirm("مطمئنی می‌خوای این عضو رو از یگان حذف کنی؟")) {
+    await doIt();
+  }
 }
 
 async function leaveTeam() {
@@ -1127,4 +1158,4 @@ function copyTeamInviteCode() {
 init();
 </script>
 </body>
-                                                                                                     </html>
+        </html>
