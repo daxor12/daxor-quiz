@@ -983,6 +983,7 @@ async function loadTeamScreen() {
   document.getElementById("teamDashboardView").style.display = "none";
   try {
     const res = await callFunction("get-my-team", { telegram_id: USER_ID });
+    if (tg) tg.showAlert("DEBUG res: " + JSON.stringify(res)); else alert("DEBUG res: " + JSON.stringify(res));
     if (res.team) {
       myTeamData = res;
       renderTeamDashboard(res);
@@ -991,6 +992,7 @@ async function loadTeamScreen() {
       document.getElementById("teamNoTeamView").style.display = "block";
     }
   } catch (e) {
+    if (tg) tg.showAlert("DEBUG error: " + e.message); else alert("DEBUG error: " + e.message);
     document.getElementById("teamNoTeamView").style.display = "block";
   }
 }
@@ -1158,4 +1160,4 @@ function copyTeamInviteCode() {
 init();
 </script>
 </body>
-        </html>
+                                                                                                  </html>
