@@ -269,7 +269,7 @@
     </div>
     <div class="cd-title">عملیات بعدی در راهه</div>
     <div class="cd-timer" id="cdTimerText">۰۰:۰۰:۰۰</div>
-    <div class="cd-desc">تا آماده شدن ۱۰ سوال جدید</div>
+    <div class="cd-desc" id="cdDesc">تا آماده شدن ۱۰ سوال جدید</div>
     <button class="btn btn-secondary" style="margin-top:24px" onclick="goHome()">بازگشت به خانه</button>
   </div>
 
@@ -525,6 +525,7 @@
         <div class="qstat"><div class="num" id="teamDashMemberCount">۰/۱۰</div><div class="lbl">اعضا</div></div>
       </div>
 
+      <div id="teamMissionAction"></div>
       <div class="settings-group-title" style="margin-top:20px">اعضای یگان</div>
       <div id="teamMembersList"></div>
 
@@ -578,6 +579,7 @@ if (startParam.startsWith("ref_")) {
 }
 
 let currentSession = null;
+let currentSessionType = "normal";
 let currentQuestions = [];
 let currentQIndex = 0;
 let questionStartTime = 0;
@@ -689,6 +691,7 @@ async function loadHomeData() {
 
 async function startGame() {
   showScreen("loading");
+  currentSessionType = "normal";
   document.getElementById("bottomNav").classList.remove("visible");
   try {
     const res = await callFunction("start-session", {
@@ -709,7 +712,29 @@ async function startGame() {
   }
 }
 
-function startCooldownDisplay(remainingSeconds) {
+async function startMission() {
+  showScreen("loading");
+  document.getElementById("bottomNav").classList.remove("visible");
+  currentSessionType = "mission";
+  try {
+    const res = await callFunction("start-mission", { telegram_id: USER_ID });
+    if (!res.allowed) {
+      document.getElementById("cdDesc").textContent = "تا ماموریت بعدی یگان";
+      startCooldownDisplay(res.remaining_seconds || 0, 24 * 3600);
+      showScreen("cooldown");
+      return;
+    }
+    currentSession = res.session_id;
+    currentQuestions = res.questions;
+    currentQIndex = 0;
+    showQuestion();
+    showScreen("quiz");
+  } catch (e) {
+    showScreen("error");
+  }
+}
+
+function startCooldownDisplay(remainingSeconds, fullDurationSeconds = 5 * 3600) {
   let remaining = remainingSeconds;
   const ring = document.getElementById("cdRing");
   const circumference = 239;
@@ -719,10 +744,13 @@ function startCooldownDisplay(remainingSeconds) {
     const s = remaining % 60;
     document.getElementById("cdTimerText").textContent =
       toFa(String(h).padStart(2, "0")) + ":" + toFa(String(m).padStart(2, "0")) + ":" + toFa(String(s).padStart(2, "0"));
-    const fullDuration = 5 * 3600;
-    const progress = 1 - remaining / fullDuration;
+    const progress = 1 - remaining / fullDurationSeconds;
     ring.style.strokeDashoffset = circumference * (1 - progress);
-    if (remaining <= 0) { clearInterval(timerInterval); goHome(); return; }
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      if (currentSessionType === "mission") navTo("team"); else goHome();
+      return;
+    }
     remaining--;
   }
   tick();
@@ -1068,12 +1096,20 @@ function renderTeamDashboard(data) {
   document.getElementById("teamDashMemberCount").textContent = `${toFa(members.length)}/۱۰`;
 
   const isCommander = team.commander_telegram_id === USER_ID;
+  const missionEl = document.getElementById("teamMissionAction");
+  const my = data.my_membership;
+  if (my && my.is_active_roster && my.mission_category) {
+    const catLabel = TEAM_CATEGORY_LABELS[my.mission_category] || my.mission_category;
+    missionEl.innerHTML = `<button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="startMission()">شروع ماموریت (${catLabel})</button>`;
+  } else {
+    missionEl.innerHTML = "";
+  }
   const list = document.getElementById("teamMembersList");
   list.innerHTML = members.map(m => {
     const missionLabel = m.mission_category ? TEAM_CATEGORY_LABELS[m.mission_category] : "بدون ماموریت";
     const badges = `${m.is_commander ? '<span class="cmdr-badge">فرمانده</span>' : ""}${!m.is_active_roster ? '<span class="reserve-badge">ذخیره</span>' : ""}`;
     const missionControl = isCommander && !m.is_commander
-      ? `<select class="mission-select" onchange="assignMission(${m.telegram_id}, this.value)" onclick="event.stopPropagation()">
+      ? `<select class="mission-select" data-prev="${m.mission_category || ""}" onchange="onMissionSelectChange(this, ${m.telegram_id})" onclick="event.stopPropagation()">
           <option value="">بدون ماموریت</option>
           ${Object.entries(TEAM_CATEGORY_LABELS).map(([k, v]) =>
             `<option value="${k}" ${m.mission_category === k ? "selected" : ""}>${v}</option>`).join("")}
@@ -1109,6 +1145,25 @@ async function assignMission(memberTelegramId, category) {
     });
     await loadTeamScreen();
   } catch (e) { /* silent */ }
+}
+
+function onMissionSelectChange(selectEl, memberTelegramId) {
+  const newValue = selectEl.value;
+  const label = newValue ? (TEAM_CATEGORY_LABELS[newValue] || newValue) : "بدون ماموریت";
+  const previousValue = selectEl.getAttribute("data-prev") || "";
+  const doIt = async () => {
+    await assignMission(memberTelegramId, newValue);
+    selectEl.setAttribute("data-prev", newValue);
+  };
+  const revert = () => { selectEl.value = previousValue; };
+  const msg = `مطمئنی می‌خوای ماموریت این عضو رو به «${label}» تغییر بدی؟`;
+  if (tg) {
+    tg.showConfirm(msg, async (ok) => { if (ok) await doIt(); else revert(); });
+  } else if (confirm(msg)) {
+    doIt();
+  } else {
+    revert();
+  }
 }
 
 async function removeMember(memberTelegramId) {
