@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DAXOR Military Quiz</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap");
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -271,6 +272,7 @@
     <div class="cd-timer" id="cdTimerText">۰۰:۰۰:۰۰</div>
     <div class="cd-desc" id="cdDesc">تا آماده شدن ۱۰ سوال جدید</div>
     <button class="btn btn-secondary" style="margin-top:24px" onclick="goHome()">بازگشت به خانه</button>
+    <button class="btn btn-primary" id="skipCooldownBtn" style="margin-top:10px;display:none" onclick="watchAdToSkip()">تماشای تبلیغ و بازی فوری</button>
   </div>
 
   <!-- 4. HOME -->
@@ -301,6 +303,7 @@
       <div class="qstat"><div class="num" id="statCoins">۰</div><div class="lbl">غنیمت</div></div>
     </div>
     <button class="btn btn-primary cta-big" onclick="startGame()">شروع عملیات</button>
+    <button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="watchAdForCoins()">تماشای تبلیغ (۲۵ سکه)</button>
   </div>
 
   <!-- 5. QUIZ -->
@@ -567,6 +570,8 @@ const RANK_NAMES = ['سرباز صفر','سرباز دوم','سرباز یکم',
 
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
+const AdCoins = window.Adsgram ? window.Adsgram.init({ blockId: "46385" }) : null;
+const AdSkip = window.Adsgram ? window.Adsgram.init({ blockId: "46464" }) : null;
 
 const tgUser = tg?.initDataUnsafe?.user;
 const USER_ID = tgUser?.id || 111222333;
@@ -699,6 +704,7 @@ async function startGame() {
     });
     if (!res.allowed) {
       startCooldownDisplay(res.remaining_seconds || 0);
+      document.getElementById("skipCooldownBtn").style.display = "block";
       showScreen("cooldown");
       return;
     }
@@ -721,6 +727,7 @@ async function startMission() {
     if (!res.allowed) {
       document.getElementById("cdDesc").textContent = "تا ماموریت بعدی یگان";
       startCooldownDisplay(res.remaining_seconds || 0, 24 * 3600);
+      document.getElementById("skipCooldownBtn").style.display = "none";
       showScreen("cooldown");
       return;
     }
@@ -835,6 +842,32 @@ async function finishGame() {
     document.getElementById("resTotal").textContent = toFa(res.total_answered || 0);
     showScreen("result");
   } catch (e) { showScreen("error"); }
+}
+
+function watchAdForCoins() {
+  if (!AdCoins) {
+    if (tg) tg.showAlert("در حال حاضر تبلیغی موجود نیست"); else alert("در حال حاضر تبلیغی موجود نیست");
+    return;
+  }
+  AdCoins.show().then(() => {
+    setTimeout(() => { loadHomeData(); }, 1500);
+    if (tg) tg.showAlert("۲۵ سکه به حسابت اضافه شد!");
+  }).catch(() => {
+    if (tg) tg.showAlert("تبلیغی برای نمایش پیدا نشد، بعداً امتحان کن"); else alert("تبلیغی برای نمایش پیدا نشد");
+  });
+}
+
+function watchAdToSkip() {
+  if (!AdSkip) {
+    if (tg) tg.showAlert("در حال حاضر تبلیغی موجود نیست"); else alert("در حال حاضر تبلیغی موجود نیست");
+    return;
+  }
+  AdSkip.show().then(() => {
+    clearInterval(timerInterval);
+    setTimeout(() => { startGame(); }, 1500);
+  }).catch(() => {
+    if (tg) tg.showAlert("تبلیغی برای نمایش پیدا نشد، بعداً امتحان کن"); else alert("تبلیغی برای نمایش پیدا نشد");
+  });
 }
 
 function switchLbTab(period) {
