@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -1141,7 +1142,7 @@ function renderTeamDashboard(data) {
   list.innerHTML = members.map(m => {
     const missionLabel = m.mission_category ? TEAM_CATEGORY_LABELS[m.mission_category] : "بدون ماموریت";
     const badges = `${m.is_commander ? '<span class="cmdr-badge">فرمانده</span>' : ""}${!m.is_active_roster ? '<span class="reserve-badge">ذخیره</span>' : ""}`;
-    const missionControl = isCommander && !m.is_commander
+    const missionControl = isCommander
       ? `<select class="mission-select" data-prev="${m.mission_category || ""}" onchange="onMissionSelectChange(this, ${m.telegram_id})" onclick="event.stopPropagation()">
           <option value="">بدون ماموریت</option>
           ${Object.entries(TEAM_CATEGORY_LABELS).map(([k, v]) =>
@@ -1246,4 +1247,5 @@ function copyTeamInviteCode() {
 init();
 </script>
 </body>
-  </html>
+</html>
+```
