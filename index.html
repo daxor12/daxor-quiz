@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -845,9 +844,11 @@ async function finishGame() {
   } catch (e) { showScreen("error"); }
 }
 
+const ADS_ENABLED = false;
+
 function watchAdForCoins() {
-  if (!AdCoins) {
-    if (tg) tg.showAlert("در حال حاضر تبلیغی موجود نیست"); else alert("در حال حاضر تبلیغی موجود نیست");
+  if (!ADS_ENABLED || !AdCoins) {
+    if (tg) tg.showAlert("سیستم تبلیغات به‌زودی فعال می‌شه، فعلاً موجود نیست"); else alert("سیستم تبلیغات به‌زودی فعال می‌شه، فعلاً موجود نیست");
     return;
   }
   AdCoins.show().then(() => {
@@ -859,8 +860,8 @@ function watchAdForCoins() {
 }
 
 function watchAdToSkip() {
-  if (!AdSkip) {
-    if (tg) tg.showAlert("در حال حاضر تبلیغی موجود نیست"); else alert("در حال حاضر تبلیغی موجود نیست");
+  if (!ADS_ENABLED || !AdSkip) {
+    if (tg) tg.showAlert("سیستم تبلیغات به‌زودی فعال می‌شه، فعلاً موجود نیست"); else alert("سیستم تبلیغات به‌زودی فعال می‌شه، فعلاً موجود نیست");
     return;
   }
   AdSkip.show().then(() => {
@@ -1247,5 +1248,4 @@ function copyTeamInviteCode() {
 init();
 </script>
 </body>
-</html>
-```
+  </html>
