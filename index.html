@@ -8,12 +8,32 @@
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap");
+  :root {
+    --bg: #0a0a0d;
+    --surface: #111114;
+    --surface-2: #17171b;
+    --border: rgba(255,255,255,0.07);
+    --text: #f2f2f0;
+    --text-dim: #8b8b93;
+    --text-faint: #55555c;
+    --accent: #a3181c;
+    --accent-rgb: 163,24,28;
+    --accent-bright: #d92d2d;
+    --accent-dark: #4a0a0a;
+    --accent-soft: #ff6b6b;
+    --brass: #b8863d;
+    --brass-rgb: 184,134,61;
+    --gold: #ffb22d;
+    --sp-1: 8px; --sp-2: 12px; --sp-3: 16px; --sp-4: 24px; --sp-5: 32px;
+    --r-tight: 10px;   /* structural / brand elements */
+    --r-soft: 16px;    /* tactile elements: buttons, inputs, list rows */
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body {
     font-family: "Vazirmatn", sans-serif;
-    background: #08080a;
-    color: #f5f5f5;
+    background: var(--bg);
+    color: var(--text);
     overflow-x: hidden;
     min-height: 100vh;
   }
@@ -21,7 +41,7 @@
     max-width: 480px;
     margin: 0 auto;
     min-height: 100vh;
-    background: radial-gradient(ellipse 420px 260px at 20% -10%, rgba(196,30,30,0.12), transparent 60%), #08080a;
+    background: radial-gradient(ellipse 420px 260px at 20% -10%, rgba(var(--accent-rgb),0.12), transparent 60%), var(--bg);
     padding: 20px 18px 100px;
     position: relative;
   }
@@ -29,16 +49,16 @@
   .screen.active { display: flex; }
 
   .center-flex { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:6px; }
-  .btn { border: none; border-radius: 15px; padding: 15px; font-family: inherit; font-weight: 700; font-size: 13.5px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
-  .btn-primary { background: linear-gradient(135deg, #f13c3c, #a31818); color:#fff; box-shadow: 0 12px 26px rgba(196,30,30,0.35); }
+  .btn { border: none; border-radius: var(--r-soft); padding: 15px; font-family: inherit; font-weight: 700; font-size: 13.5px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent-bright), var(--accent)); color:#fff; box-shadow: 0 12px 26px rgba(var(--accent-rgb),0.35); }
   .btn-secondary { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color:#ccc; }
   .back-row { display:flex; align-items:center; justify-content:space-between; margin-bottom: 14px; }
-  .back-btn { width:34px; height:34px; border-radius:10px; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .back-btn { width:34px; height:34px; border-radius:var(--r-tight); background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .page-title { font-size:14px; font-weight:700; }
   .spacer34 { width:34px; }
 
-  .loading-logo { width:70px; height:70px; border-radius:50%; overflow:hidden; border:2px solid rgba(196,30,30,0.5); box-shadow:0 0 30px rgba(196,30,30,0.3); }
-  .loading-logo img { width:100%; height:100%; object-fit:cover; }
+  .loading-logo { width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--surface); border:2px solid rgba(var(--accent-rgb),0.5); box-shadow:0 0 30px rgba(var(--accent-rgb),0.3); color:var(--text-dim); }
+  .loading-logo svg { width:72%; height:72%; }
   .spinner { width:34px; height:34px; border-radius:50%; border:3px solid #232228; border-top-color:#e83030; animation: spin 0.9s linear infinite; margin-top: 20px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { font-size:12px; color:#75757c; letter-spacing:1px; margin-top: 14px; }
@@ -47,7 +67,8 @@
   .fj-title { text-align:center; font-size:17px; font-weight:800; margin-top:18px; }
   .fj-desc { text-align:center; font-size:12px; color:#8a8a8f; margin-top:8px; line-height:1.9; padding:0 12px; }
   .fj-channel-card { margin-top:22px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:14px; display:flex; align-items:center; gap:12px; }
-  .fj-channel-card img { width:44px; height:44px; border-radius:50%; }
+  .fj-channel-card .fj-mark { width:44px; height:44px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--surface-2); border:1px solid rgba(var(--accent-rgb),0.4); color:var(--text-dim); }
+  .fj-channel-card .fj-mark svg { width:70%; height:70%; }
   .fj-channel-card .cn { font-size:13px; font-weight:700; }
   .fj-channel-card .cs { font-size:10.5px; color:#75757c; margin-top:2px; }
 
@@ -60,32 +81,39 @@
   .cd-desc { text-align:center; font-size:11.5px; color:#75757c; margin-top:6px; }
 
   .home-top { display:flex; align-items:center; justify-content:space-between; }
+  .home-brand { display:flex; align-items:center; gap:6px; color:var(--text-faint); }
+  .home-brand svg { width:20px; height:20px; }
+  .home-brand span { font-size:10px; font-weight:700; letter-spacing:0.5px; }
   .greet { display:flex; align-items:center; gap:11px; }
-  .avatar { width:44px; height:44px; border-radius:14px; overflow:hidden; border:1.5px solid rgba(196,30,30,0.5); }
+  .avatar { width:44px; height:44px; border-radius:var(--r-soft); overflow:hidden; border:1.5px solid rgba(var(--accent-rgb),0.5); }
   .avatar img { width:100%; height:100%; object-fit:cover; }
-  .greet-text .hi { font-size:11.5px; color:#75757c; font-weight:500; }
+  .greet-text .hi { font-size:11.5px; color:var(--text-dim); font-weight:500; }
   .greet-text .name { font-size:15.5px; font-weight:800; margin-top:1px; }
-  .rank-card { margin-top:20px; border-radius:22px; padding:20px; background: linear-gradient(135deg, #b81c1c 0%, #5c0d0d 100%); position:relative; overflow:hidden; box-shadow:0 16px 32px rgba(184,28,28,0.28); }
+  .rank-card { margin-top:var(--sp-4); border-radius:var(--r-tight); padding:20px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); position:relative; overflow:hidden; box-shadow:0 16px 32px rgba(var(--accent-rgb),0.28); }
+  .rank-texture { position:absolute; inset:0; opacity:0.14; color:#fff; pointer-events:none; }
+  .rank-texture svg { position:absolute; width:150px; height:150px; top:50%; left:-30px; transform:translateY(-50%); }
   .rank-row { display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1; }
   .rank-name { font-size:21px; font-weight:800; }
   .rank-sub { font-size:11px; opacity:0.82; margin-top:3px; }
   .rank-badge-img { width:44px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3)); }
-  .progress-track { margin-top:16px; height:7px; background: rgba(0,0,0,0.35); border-radius:10px; overflow:hidden; position:relative; z-index:1; }
-  .progress-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, #ffb3b3, #ffffff); }
-  .quick-stats { display:flex; gap:10px; margin-top:18px; }
-  .qstat { flex:1; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:14px 8px; text-align:center; }
-  .qstat .num { font-size:17px; font-weight:800; }
-  .qstat .lbl { font-size:9.5px; color:#75757c; margin-top:3px; }
-  .cta-big { margin-top:26px; width:100%; }
+  .rank-level-tag { margin-top:7px; font-size:10px; font-weight:800; letter-spacing:0.5px; color:rgba(255,255,255,0.85); }
+  .progress-track { margin-top:16px; height:6px; background: rgba(0,0,0,0.35); border-radius:10px; overflow:hidden; position:relative; z-index:1; }
+  .progress-fill { height:100%; border-radius:10px; background:#fff; opacity:0.92; }
+  .quick-stats { display:flex; gap:var(--sp-2); margin-top:var(--sp-3); }
+  .qstat { flex:1; background: var(--surface); border:1px solid var(--border); border-radius:var(--r-soft); padding:14px 8px; text-align:center; }
+  .qstat .num { font-size:17px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:0.3px; }
+  .qstat.brass .num { color:var(--brass); }
+  .qstat .lbl { font-size:9.5px; color:var(--text-dim); margin-top:3px; }
+  .cta-big { margin-top:var(--sp-4); width:100%; }
 
   .quiz-header { display:flex; justify-content:space-between; align-items:center; }
   .qnum { font-size:12px; color:#75757c; font-weight:600; }
-  .qcat { font-size:10.5px; background: rgba(196,30,30,0.12); border:1px solid rgba(196,30,30,0.3); padding:5px 12px; border-radius:20px; color:#ff6b6b; font-weight:600; }
+  .qcat { font-size:10.5px; background: rgba(var(--accent-rgb),0.12); border:1px solid rgba(var(--accent-rgb),0.3); padding:5px 12px; border-radius:20px; color:var(--accent-soft); font-weight:600; }
   .timer-wrap { display:flex; justify-content:center; margin:26px 0 20px; }
   .timer-ring { position:relative; width:110px; height:110px; }
   .timer-ring svg { transform: rotate(-90deg); }
   .timer-ring .bg { stroke:#1a191e; }
-  .timer-ring .fg { stroke:#e83030; stroke-linecap:round; transition: stroke-dashoffset 1s linear; }
+  .timer-ring .fg { stroke:var(--accent); stroke-linecap:round; transition: stroke-dashoffset 1s linear; }
   .timer-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; }
   .q-text { text-align:center; font-size:15.5px; font-weight:600; line-height:1.9; padding:0 8px; }
   .options { margin-top:22px; display:flex; flex-direction:column; gap:10px; }
@@ -122,12 +150,12 @@
   }
   .bottom-nav.visible { display: flex; }
   .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; color:#55555c; background:none; border:none; font-family:inherit; }
-  .nav-item.active { color:#f13c3c; }
+  .nav-item.active { color:var(--accent-bright); }
   .nav-item .nlbl { font-size:9px; font-weight:600; }
 
   .lb-tabs { display:flex; gap:8px; margin-top:4px; }
   .lb-tab { flex:1; text-align:center; padding:9px; border-radius:12px; font-size:11.5px; font-weight:600; background: rgba(255,255,255,0.03); color:#75757c; border:1px solid rgba(255,255,255,0.06); cursor:pointer; }
-  .lb-tab.active { background: linear-gradient(135deg, #e83030, #a31818); color:#fff; border-color: transparent; }
+  .lb-tab.active { background: linear-gradient(135deg, var(--accent-bright), var(--accent)); color:#fff; border-color: transparent; }
   .lb-list { margin-top:16px; overflow-y:auto; }
   .lb-row { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:16px; margin-bottom:8px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); cursor:pointer; }
   .lb-row.top1 { background: linear-gradient(135deg, rgba(255,178,45,0.14), rgba(255,178,45,0.02)); border:1px solid rgba(255,178,45,0.3); }
@@ -153,8 +181,10 @@
   .p-avatar img { width:100%; height:100%; object-fit:cover; }
   .hero-info { flex:1; }
   .p-name { font-size:17px; font-weight:800; }
-  .p-rank-chip { display:inline-flex; align-items:center; gap:6px; margin-top:8px; background: linear-gradient(135deg, rgba(196,30,30,0.22), rgba(196,30,30,0.06)); border:1px solid rgba(196,30,30,0.35); padding:4px 12px 4px 8px; border-radius:20px; font-size:11px; font-weight:700; color:#ff6b6b; }
+  .p-rank-chip { display:inline-flex; align-items:center; gap:6px; margin-top:8px; background: linear-gradient(135deg, rgba(var(--accent-rgb),0.22), rgba(var(--accent-rgb),0.06)); border:1px solid rgba(var(--accent-rgb),0.35); padding:4px 12px 4px 8px; border-radius:20px; font-size:11px; font-weight:700; color:var(--accent-soft); }
   .p-rank-chip img { width:16px; }
+  .p-rank-chip--brass { background: linear-gradient(135deg, rgba(var(--brass-rgb),0.22), rgba(var(--brass-rgb),0.06)); border-color: rgba(var(--brass-rgb),0.35); color:var(--brass); }
+  .p-level-plain { align-self:center; font-size:11px; font-weight:700; color:var(--text-dim); letter-spacing:0.3px; }
   .p-progress-track { margin-top:16px; height:7px; background: rgba(0,0,0,0.4); border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.05); }
   .p-progress-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, #a31818, #ff6b6b); }
   .p-progress-label { display:flex; justify-content:space-between; font-size:10px; color:#75757c; margin-top:7px; }
@@ -200,7 +230,7 @@
   .pub-avatar { width:96px; height:96px; border-radius:26px; overflow:hidden; box-shadow: 0 0 0 3px rgba(196,30,30,0.55), 0 10px 30px rgba(196,30,30,0.25); }
   .pub-avatar img { width:100%; height:100%; object-fit:cover; }
   .pub-name { font-size:18px; font-weight:800; margin-top:14px; }
-  .pub-rank-chip { display:inline-flex; align-items:center; gap:6px; margin-top:9px; background: linear-gradient(135deg, rgba(196,30,30,0.22), rgba(196,30,30,0.06)); border:1px solid rgba(196,30,30,0.35); padding:5px 14px 5px 9px; border-radius:20px; font-size:11.5px; font-weight:700; color:#ff6b6b; }
+  .pub-rank-chip { display:inline-flex; align-items:center; gap:6px; margin-top:9px; background: linear-gradient(135deg, rgba(var(--accent-rgb),0.22), rgba(var(--accent-rgb),0.06)); border:1px solid rgba(var(--accent-rgb),0.35); padding:5px 14px 5px 9px; border-radius:20px; font-size:11.5px; font-weight:700; color:var(--accent-soft); }
   .pub-rank-chip img { width:17px; }
   .pub-stats-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:9px; margin-top:22px; }
   .pub-section-title { font-size:11px; color:#75757c; letter-spacing:1px; margin-top:24px; margin-bottom:10px; padding:0 2px; font-weight:700; }
@@ -234,12 +264,27 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="daxor-mark" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="2" opacity="0.55"/>
+    <g stroke="currentColor" stroke-width="2" opacity="0.55">
+      <line x1="50" y1="1" x2="50" y2="11"/>
+      <line x1="50" y1="89" x2="50" y2="99"/>
+      <line x1="1" y1="50" x2="11" y2="50"/>
+      <line x1="89" y1="50" x2="99" y2="50"/>
+    </g>
+    <g stroke="#a3181c" stroke-width="10" stroke-linecap="round">
+      <line x1="29" y1="29" x2="71" y2="71"/>
+      <line x1="71" y1="29" x2="29" y2="71"/>
+    </g>
+  </symbol>
+</svg>
 <div id="app">
 
   <!-- 1. LOADING -->
   <div class="screen active" id="screen-loading">
     <div class="center-flex" style="flex:1">
-      <div class="loading-logo"><img src="assets/logo-circle.jpg" alt=""></div>
+      <div class="loading-logo"><svg><use href="#daxor-mark"/></svg></div>
       <div class="spinner"></div>
       <div class="loading-text">در حال بررسی وضعیت عملیات...</div>
     </div>
@@ -253,7 +298,7 @@
     <div class="fj-title">دسترسی محدود شده</div>
     <div class="fj-desc">برای ورود به میدان آزمون، ابتدا باید عضو واحد اطلاعاتی DAXOR بشی</div>
     <div class="fj-channel-card">
-      <img src="assets/logo-circle.jpg" alt="">
+      <div class="fj-mark"><svg><use href="#daxor-mark"/></svg></div>
       <div><div class="cn">DAXOR UNIT</div><div class="cs">@Daxor_unit</div></div>
     </div>
     <button class="btn btn-primary" style="margin-top:22px" onclick="openChannel()">عضویت در کانال</button>
@@ -282,8 +327,10 @@
         <div class="avatar"><img id="homeAvatar" src="assets/avatars/avatar-3.png" alt=""></div>
         <div class="greet-text"><div class="hi">خوش اومدی</div><div class="name" id="homeName">سرباز</div></div>
       </div>
+      <div class="home-brand"><span>DAXOR</span><svg><use href="#daxor-mark"/></svg></div>
     </div>
     <div class="rank-card">
+      <div class="rank-texture"><svg><use href="#daxor-mark"/></svg></div>
       <div class="rank-row">
         <div>
           <div class="rank-name" id="homeRankName">سرباز صفر</div>
@@ -291,7 +338,7 @@
         </div>
         <div style="text-align:center; position:relative; z-index:1">
           <img class="rank-badge-img" id="homeRankImg" src="assets/ranks/rank-1.png" alt="">
-          <div style="margin-top:6px; font-size:10.5px; font-weight:800; background: rgba(0,0,0,0.3); border-radius:10px; padding:3px 10px;">Lv <span id="homeLevel">۱</span></div>
+          <div class="rank-level-tag">LV <span id="homeLevel">۱</span></div>
         </div>
       </div>
       <div class="progress-track"><div class="progress-fill" id="homeProgressFill" style="width:0%"></div></div>
@@ -300,7 +347,7 @@
       <div class="qstat"><div class="num" id="statGames">۰</div><div class="lbl">بازی</div></div>
       <div class="qstat"><div class="num" id="statInvites">۰</div><div class="lbl">دعوت</div></div>
       <div class="qstat"><div class="num" id="statScore">۰</div><div class="lbl">امتیاز کل</div></div>
-      <div class="qstat"><div class="num" id="statCoins">۰</div><div class="lbl">غنیمت</div></div>
+      <div class="qstat brass"><div class="num" id="statCoins">۰</div><div class="lbl">غنیمت</div></div>
     </div>
     <button class="btn btn-primary cta-big" onclick="startGame()">شروع عملیات</button>
     <button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="watchAdForCoins()">تماشای تبلیغ (۲۵ سکه)</button>
@@ -385,14 +432,11 @@
         <div class="p-name" id="profName">سرباز</div>
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px">
           <div class="p-rank-chip" style="margin-top:0"><img id="profRankImg" src="assets/ranks/rank-1.png" alt=""><span id="profRankName">سرباز صفر</span></div>
-          <div class="p-rank-chip" style="margin-top:0; background: linear-gradient(135deg, rgba(255,178,45,0.22), rgba(255,178,45,0.06)); border-color: rgba(255,178,45,0.35); color:#ffb22d;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffb22d" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9 10h6"/></svg>
+          <div class="p-rank-chip p-rank-chip--brass" style="margin-top:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9 10h6"/></svg>
             <span id="profCoins">۰ سکه</span>
           </div>
-          <div class="p-rank-chip" style="margin-top:0; background: linear-gradient(135deg, rgba(59,130,246,0.22), rgba(59,130,246,0.06)); border-color: rgba(59,130,246,0.35); color:#7cb0ff;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7cb0ff" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            <span>Lv <span id="profLevel">۱</span></span>
-          </div>
+          <div class="p-level-plain">LV <span id="profLevel">۱</span></div>
         </div>
       </div>
     </div>
