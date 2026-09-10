@@ -250,6 +250,29 @@
   .team-name-lg{font-size:19px; font-weight:800;}
   .team-desc-sm{font-size:11px; opacity:0.85; margin-top:6px; line-height:1.8;}
   .team-invite-row{margin-top:14px; display:flex; gap:8px;}
+  .team-flag { position:relative; border-radius:22%; overflow:hidden; flex-shrink:0; box-shadow:0 2px 10px rgba(0,0,0,0.35); }
+  .team-flag[data-pattern="solid"] { background: var(--c1); }
+  .team-flag[data-pattern="horizontal_2"] { background: linear-gradient(to bottom, var(--c1) 50%, var(--c2) 50%); }
+  .team-flag[data-pattern="vertical_2"] { background: linear-gradient(to right, var(--c1) 50%, var(--c2) 50%); }
+  .team-flag[data-pattern="horizontal_3"] { background: linear-gradient(to bottom, var(--c1) 33.33%, var(--c2) 33.33% 66.66%, var(--c3) 66.66%); }
+  .team-flag[data-pattern="vertical_3"] { background: linear-gradient(to right, var(--c1) 33.33%, var(--c2) 33.33% 66.66%, var(--c3) 66.66%); }
+  .team-flag[data-pattern="circle_center"] { background: radial-gradient(circle at 50% 50%, var(--c2) 0 28%, transparent 29%), var(--c1); }
+  .team-flag[data-pattern="cross_side"] { background: linear-gradient(var(--c2), var(--c2)) no-repeat 0 42%/100% 16%, linear-gradient(var(--c2), var(--c2)) no-repeat 28% 0/16% 100%, var(--c1); }
+  .team-flag[data-pattern="corner_box"] { background: linear-gradient(var(--c2), var(--c2)) no-repeat 0 0/42% 42%, var(--c1); }
+  .team-flag[data-pattern="border_frame"] { background: var(--c2); }
+  .team-flag[data-pattern="border_frame"]::after { content:""; position:absolute; inset:14%; background:var(--c1); z-index:1; }
+  .team-flag-emblem { position:absolute; inset:16%; z-index:2; -webkit-mask-size:contain; mask-size:contain; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; display:none; }
+  .logo-pattern-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .logo-pattern-cell { display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 6px; border-radius:var(--r-soft); background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); cursor:pointer; }
+  .logo-pattern-cell.active { border-color: var(--accent-bright); background:rgba(var(--accent-rgb),0.12); }
+  .lp-label { font-size:10px; color:var(--text-dim); text-align:center; }
+  .logo-color-row { display:flex; gap:12px; flex-wrap:wrap; }
+  .logo-color-input { width:52px; height:52px; border-radius:14px; border:1px solid rgba(255,255,255,0.15); background:none; padding:0; cursor:pointer; }
+  .logo-emblem-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .logo-emblem-cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); cursor:pointer; }
+  .logo-emblem-cell.active { border-color:var(--accent-bright); background:rgba(var(--accent-rgb),0.12); }
+  .le-thumb { width:70%; height:70%; background-color:#e5e5e5; -webkit-mask-size:contain; mask-size:contain; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; }
+  .le-none { font-size:9px; color:var(--text-dim); text-align:center; }
   .member-row{display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:11px 12px; margin-bottom:8px; cursor:pointer;}
   .member-row .mav{width:36px;height:36px;border-radius:11px;overflow:hidden;flex-shrink:0;}
   .member-row .mav img{width:100%;height:100%;object-fit:cover;}
@@ -556,8 +579,18 @@
 
     <div id="teamDashboardView" style="display:none">
       <div class="team-header-card">
-        <div class="team-name-lg" id="teamDashName">—</div>
-        <div class="team-desc-sm" id="teamDashDesc"></div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="team-flag" id="teamDashFlag" style="width:56px;height:56px;">
+            <div class="team-flag-emblem" id="teamDashFlagEmblem"></div>
+          </div>
+          <div style="flex:1">
+            <div class="team-name-lg" id="teamDashName">—</div>
+            <div class="team-desc-sm" id="teamDashDesc"></div>
+          </div>
+        </div>
+        <div id="teamLogoEditBtn" style="display:none;margin-top:12px">
+          <button class="btn btn-secondary" style="width:100%;padding:10px" onclick="openLogoEditor()">ویرایش لوگو (۱۰۰ سکه)</button>
+        </div>
         <div class="team-invite-row">
           <div class="ac-input" id="teamDashInviteCode" style="flex:1">—</div>
           <button class="ac-btn" onclick="copyTeamInviteCode()">
@@ -578,6 +611,38 @@
 
       <button class="btn btn-secondary" style="margin-top:14px" onclick="leaveTeam()">ترک یگان</button>
     </div>
+  </div>
+
+  <!-- 13. TEAM LOGO EDITOR -->
+  <div class="screen" id="screen-team-logo">
+    <div class="back-row">
+      <div class="back-btn" onclick="closeLogoEditor()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg></div>
+      <div class="page-title">ویرایش لوگو</div>
+      <div class="spacer34"></div>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin:10px 0 20px">
+      <div class="team-flag" id="logoPreview" style="width:90px;height:90px;">
+        <div class="team-flag-emblem" id="logoPreviewEmblem"></div>
+      </div>
+    </div>
+
+    <div class="settings-group-title">الگو</div>
+    <div class="logo-pattern-grid" id="logoPatternGrid"></div>
+
+    <div class="settings-group-title" style="margin-top:20px">رنگ‌ها</div>
+    <div class="logo-color-row" id="logoColorRow"></div>
+
+    <div class="settings-group-title" style="margin-top:20px">آرم</div>
+    <div class="logo-emblem-grid" id="logoEmblemGrid"></div>
+
+    <div id="logoEmblemColorRow" style="margin-top:14px; display:none">
+      <div class="settings-group-title">رنگ آرم</div>
+      <input type="color" class="logo-color-input" id="logoEmblemColorInput" oninput="onLogoStateChange()">
+    </div>
+
+    <div id="logoEditorMsg" style="text-align:center;font-size:11px;color:#ff6b6b;margin-top:14px"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="saveTeamLogo()">ذخیره لوگو (۱۰۰ سکه)</button>
   </div>
 
 </div>
@@ -1078,6 +1143,42 @@ let currentTeamTab = "create";
 let teamSearchTimeout = null;
 let myTeamData = null;
 
+const FLAG_PATTERNS = [
+  { id: "solid", label: "تک‌رنگ", colors: 1 },
+  { id: "horizontal_2", label: "دو رنگ افقی", colors: 2 },
+  { id: "vertical_2", label: "دو رنگ عمودی", colors: 2 },
+  { id: "horizontal_3", label: "سه رنگ افقی", colors: 3 },
+  { id: "vertical_3", label: "سه رنگ عمودی", colors: 3 },
+  { id: "circle_center", label: "دایره‌ی وسط", colors: 2 },
+  { id: "cross_side", label: "صلیب کناری", colors: 2 },
+  { id: "corner_box", label: "کادر گوشه", colors: 2 },
+  { id: "border_frame", label: "حاشیه", colors: 2 },
+];
+
+const TEAM_EMBLEMS = [
+  "lion_crowned", "bull", "eagle_front", "scorpion", "bear_swords",
+  "eagle_bolt", "wolf", "lion_swords", "skull_dagger", "eagle_shield",
+];
+
+function emblemUrl(name) {
+  return `${name}.png`;
+}
+
+function renderTeamFlag(team, size) {
+  const pattern = team.logo_pattern || "solid";
+  const colors = (team.logo_colors && team.logo_colors.length) ? team.logo_colors : ["#3b82f6"];
+  const c1 = colors[0] || "#3b82f6";
+  const c2 = colors[1] || c1;
+  const c3 = colors[2] || c2;
+  let emblemHtml = "";
+  if (team.logo_emblem) {
+    const url = emblemUrl(team.logo_emblem);
+    const ec = team.logo_emblem_color || "#ffffff";
+    emblemHtml = `<div class="team-flag-emblem" style="display:block;background-color:${ec};-webkit-mask-image:url('${url}');mask-image:url('${url}');"></div>`;
+  }
+  return `<div class="team-flag" data-pattern="${pattern}" style="--c1:${c1};--c2:${c2};--c3:${c3};width:${size}px;height:${size}px;">${emblemHtml}</div>`;
+}
+
 function switchTeamTab(tab) {
   currentTeamTab = tab;
   document.querySelectorAll("[data-teamtab]").forEach(t => t.classList.toggle("active", t.dataset.teamtab === tab));
@@ -1136,7 +1237,10 @@ async function searchTeams() {
     }
     wrap.innerHTML = teams.map(t => `
       <div class="team-search-row">
-        <div><div class="tn">${t.name}</div><div class="tm">${toFa(t.member_count)}/۱۰ عضو</div></div>
+        <div style="display:flex; align-items:center; gap:10px">
+          ${renderTeamFlag(t, 34)}
+          <div><div class="tn">${t.name}</div><div class="tm">${toFa(t.member_count)}/۱۰ عضو</div></div>
+        </div>
         <button class="btn btn-secondary" style="width:auto;padding:9px 16px" onclick="joinTeamById('${t.id}')">پیوستن</button>
       </div>`).join("");
   } catch (e) {
@@ -1174,7 +1278,25 @@ function renderTeamDashboard(data) {
   document.getElementById("teamDashTotalXp").textContent = toFa(team.total_xp || 0);
   document.getElementById("teamDashMemberCount").textContent = `${toFa(members.length)}/۱۰`;
 
+  const flagEl = document.getElementById("teamDashFlag");
+  const flagColors = (team.logo_colors && team.logo_colors.length) ? team.logo_colors : ["#3b82f6"];
+  flagEl.setAttribute("data-pattern", team.logo_pattern || "solid");
+  flagEl.style.setProperty("--c1", flagColors[0] || "#3b82f6");
+  flagEl.style.setProperty("--c2", flagColors[1] || flagColors[0] || "#3b82f6");
+  flagEl.style.setProperty("--c3", flagColors[2] || flagColors[1] || flagColors[0] || "#3b82f6");
+  const flagEmblemEl = document.getElementById("teamDashFlagEmblem");
+  if (team.logo_emblem) {
+    const eUrl = emblemUrl(team.logo_emblem);
+    flagEmblemEl.style.display = "block";
+    flagEmblemEl.style.backgroundColor = team.logo_emblem_color || "#ffffff";
+    flagEmblemEl.style.webkitMaskImage = `url('${eUrl}')`;
+    flagEmblemEl.style.maskImage = `url('${eUrl}')`;
+  } else {
+    flagEmblemEl.style.display = "none";
+  }
+
   const isCommander = team.commander_telegram_id === USER_ID;
+  document.getElementById("teamLogoEditBtn").style.display = isCommander ? "block" : "none";
   const missionEl = document.getElementById("teamMissionAction");
   const my = data.my_membership;
   if (my && my.is_active_roster && my.mission_category) {
@@ -1286,6 +1408,135 @@ function copyTeamInviteCode() {
     navigator.clipboard.writeText(code).then(() => {
       if (tg) tg.showAlert("کد دعوت کپی شد ✅");
     });
+  }
+}
+
+let logoEditorState = { pattern: "solid", colors: ["#3b82f6"], emblem: null, emblemColor: "#ffffff" };
+
+function openLogoEditor() {
+  if (!myTeamData || !myTeamData.team) return;
+  const team = myTeamData.team;
+  logoEditorState = {
+    pattern: team.logo_pattern || "solid",
+    colors: (team.logo_colors && team.logo_colors.length) ? [...team.logo_colors] : ["#3b82f6"],
+    emblem: team.logo_emblem || null,
+    emblemColor: team.logo_emblem_color || "#ffffff",
+  };
+  document.getElementById("logoEditorMsg").textContent = "";
+  renderLogoPatternGrid();
+  renderLogoEmblemGrid();
+  renderLogoColorInputs();
+  updateLogoPreview();
+  showScreen("team-logo");
+}
+
+function closeLogoEditor() {
+  showScreen("team");
+}
+
+function renderLogoPatternGrid() {
+  const grid = document.getElementById("logoPatternGrid");
+  grid.innerHTML = FLAG_PATTERNS.map(p => `
+    <div class="logo-pattern-cell${logoEditorState.pattern === p.id ? " active" : ""}" onclick="selectLogoPattern('${p.id}')">
+      <div class="team-flag" data-pattern="${p.id}" style="--c1:#8a8f98;--c2:#4b4f57;--c3:#2b2e33;width:38px;height:38px;"></div>
+      <div class="lp-label">${p.label}</div>
+    </div>`).join("");
+}
+
+function selectLogoPattern(id) {
+  const def = FLAG_PATTERNS.find(p => p.id === id);
+  const needed = def.colors;
+  const newColors = [];
+  for (let i = 0; i < needed; i++) newColors.push(logoEditorState.colors[i] || "#3b82f6");
+  logoEditorState.pattern = id;
+  logoEditorState.colors = newColors;
+  renderLogoPatternGrid();
+  renderLogoColorInputs();
+  updateLogoPreview();
+}
+
+function renderLogoColorInputs() {
+  const row = document.getElementById("logoColorRow");
+  row.innerHTML = logoEditorState.colors.map((c, i) => `
+    <input type="color" class="logo-color-input" value="${c}" oninput="onColorInput(${i}, this.value)">
+  `).join("");
+}
+
+function onColorInput(index, value) {
+  logoEditorState.colors[index] = value;
+  updateLogoPreview();
+}
+
+function renderLogoEmblemGrid() {
+  const grid = document.getElementById("logoEmblemGrid");
+  const noneCell = `
+    <div class="logo-emblem-cell${!logoEditorState.emblem ? " active" : ""}" onclick="selectLogoEmblem(null)">
+      <div class="le-none">بدون آرم</div>
+    </div>`;
+  const cells = TEAM_EMBLEMS.map(name => `
+    <div class="logo-emblem-cell${logoEditorState.emblem === name ? " active" : ""}" onclick="selectLogoEmblem('${name}')">
+      <div class="le-thumb" style="-webkit-mask-image:url('${emblemUrl(name)}');mask-image:url('${emblemUrl(name)}');"></div>
+    </div>`).join("");
+  grid.innerHTML = noneCell + cells;
+  document.getElementById("logoEmblemColorRow").style.display = logoEditorState.emblem ? "block" : "none";
+  document.getElementById("logoEmblemColorInput").value = logoEditorState.emblemColor;
+}
+
+function selectLogoEmblem(name) {
+  logoEditorState.emblem = name;
+  renderLogoEmblemGrid();
+  updateLogoPreview();
+}
+
+function onLogoStateChange() {
+  logoEditorState.emblemColor = document.getElementById("logoEmblemColorInput").value;
+  updateLogoPreview();
+}
+
+function updateLogoPreview() {
+  const preview = document.getElementById("logoPreview");
+  const c1 = logoEditorState.colors[0] || "#3b82f6";
+  const c2 = logoEditorState.colors[1] || c1;
+  const c3 = logoEditorState.colors[2] || c2;
+  preview.setAttribute("data-pattern", logoEditorState.pattern);
+  preview.style.setProperty("--c1", c1);
+  preview.style.setProperty("--c2", c2);
+  preview.style.setProperty("--c3", c3);
+  const emblemEl = document.getElementById("logoPreviewEmblem");
+  if (logoEditorState.emblem) {
+    emblemEl.style.display = "block";
+    emblemEl.style.backgroundColor = logoEditorState.emblemColor;
+    emblemEl.style.webkitMaskImage = `url('${emblemUrl(logoEditorState.emblem)}')`;
+    emblemEl.style.maskImage = `url('${emblemUrl(logoEditorState.emblem)}')`;
+  } else {
+    emblemEl.style.display = "none";
+  }
+}
+
+async function saveTeamLogo() {
+  const msg = document.getElementById("logoEditorMsg");
+  msg.textContent = "";
+  const doSave = async () => {
+    try {
+      const res = await callFunction("update-team-logo", {
+        telegram_id: USER_ID,
+        logo_pattern: logoEditorState.pattern,
+        logo_colors: logoEditorState.colors,
+        logo_emblem: logoEditorState.emblem,
+        logo_emblem_color: logoEditorState.emblem ? logoEditorState.emblemColor : null,
+      });
+      if (res.error) { msg.textContent = res.error; return; }
+      await loadTeamScreen();
+      showScreen("team");
+    } catch (e) {
+      msg.textContent = "خطا در ذخیره‌ی لوگو";
+    }
+  };
+  const confirmMsg = "تغییر لوگو ۱۰۰ سکه هزینه داره. مطمئنی؟";
+  if (tg) {
+    tg.showConfirm(confirmMsg, async (ok) => { if (ok) await doSave(); });
+  } else if (confirm(confirmMsg)) {
+    await doSave();
   }
 }
 
