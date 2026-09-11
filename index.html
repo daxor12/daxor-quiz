@@ -296,6 +296,11 @@
   .lb-toggle{display:flex; gap:8px; margin-bottom:12px;}
   .lb-toggle-btn{flex:1; text-align:center; padding:10px; border-radius:12px; font-size:12px; font-weight:700; background: rgba(255,255,255,0.03); color:#75757c; border:1px solid rgba(255,255,255,0.06); cursor:pointer;}
   .lb-toggle-btn.active{background: linear-gradient(135deg, var(--accent-bright), var(--accent)); color:#fff; border-color:transparent;}
+  .pod-cat-list{margin-top:12px; display:flex; flex-direction:column; gap:6px;}
+  .pod-cat-row{display:flex; align-items:center; justify-content:space-between; gap:8px; background: rgba(255,255,255,0.03); border-radius:10px; padding:8px 10px;}
+  .pod-cat-side{flex:1; font-size:10px; color:#ccc; text-align:center;}
+  .pod-cat-side.empty{color:#555;}
+  .pod-cat-label{font-size:9.5px; color:#75757c; font-weight:700; width:56px; text-align:center; flex-shrink:0;}
   .member-row{display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:11px 12px; margin-bottom:8px; cursor:pointer;}
   .member-row .mav{width:36px;height:36px;border-radius:11px;overflow:hidden;flex-shrink:0;}
   .member-row .mav img{width:100%;height:100%;object-fit:cover;}
@@ -1666,6 +1671,21 @@ async function loadPodStatus() {
   }
 }
 
+function renderPodCategoryBreakdown(breakdown) {
+  if (!breakdown || breakdown.length === 0) return "";
+  const rows = breakdown.map(b => {
+    const myText = b.my_member ? `${b.my_member.username} (${toFa(b.my_member.score)})` : "—";
+    const oppText = b.opponent_member ? `${b.opponent_member.username} (${toFa(b.opponent_member.score)})` : "—";
+    const myCls = b.my_member ? "" : "empty";
+    const oppCls = b.opponent_member ? "" : "empty";
+    return `<div class="pod-cat-row">
+      <div class="pod-cat-side ${myCls}">${myText}</div>
+      <div class="pod-cat-label">${TEAM_CATEGORY_LABELS[b.category]}</div>
+      <div class="pod-cat-side ${oppCls}">${oppText}</div>
+    </div>`;
+  }).join("");
+  return `<div class="pod-cat-list">${rows}</div>`;
+}
 function podResultLabel(result) {
   if (result === "win") return "برد";
   if (result === "loss") return "باخت";
@@ -1714,6 +1734,7 @@ function renderPodSection(data) {
           </div>
         </div>
         ${actionHtml}
+        ${renderPodCategoryBreakdown(m.category_breakdown)}
       </div>`;
   }
 
