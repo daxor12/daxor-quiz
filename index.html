@@ -273,6 +273,28 @@
   .logo-emblem-cell.active { border-color:var(--accent-bright); background:rgba(var(--accent-rgb),0.12); }
   .le-thumb { width:70%; height:70%; background-color:#e5e5e5; -webkit-mask-size:contain; mask-size:contain; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; }
   .le-none { font-size:9px; color:var(--text-dim); text-align:center; }
+  .pod-card{background: linear-gradient(135deg, rgba(59,130,246,0.14), rgba(59,130,246,0.03)); border:1px solid rgba(59,130,246,0.3); border-radius:16px; padding:14px;}
+  .pod-vs-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .pod-team-block{display:flex; flex-direction:column; align-items:center; gap:6px; flex:1;}
+  .pod-team-name{font-size:11px; font-weight:700; text-align:center;}
+  .pod-score{font-size:20px; font-weight:900;}
+  .pod-vs-label{font-size:10px; color:#75757c; font-weight:700;}
+  .pod-status-note{text-align:center; font-size:10.5px; color:#75757c; margin-top:10px;}
+  .pod-schedule-row{display:flex; align-items:center; justify-content:space-between; gap:10px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:10px 12px; margin-bottom:7px;}
+  .pod-schedule-row .psd{font-size:10px; color:#75757c; width:40px; flex-shrink:0;}
+  .pod-schedule-row .pso{display:flex; align-items:center; gap:8px; flex:1;}
+  .pod-schedule-row .psr{font-size:11px; font-weight:800; width:70px; text-align:left;}
+  .pod-schedule-row .psr.win{color:#22c55e;}
+  .pod-schedule-row .psr.loss{color:#ef4444;}
+  .pod-schedule-row .psr.tie{color:#ffb22d;}
+  .pod-standing-row{display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:9px 12px; margin-bottom:6px;}
+  .pod-standing-row .psn{width:16px; font-size:11px; font-weight:800; color:#75757c;}
+  .pod-standing-row .pst{flex:1; font-size:11.5px; font-weight:700;}
+  .pod-standing-row .pss{font-size:10.5px; color:#75757c;}
+  .pod-mission-select{background: rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:10px; color:#f5f5f5; font-family:inherit; font-size:10.5px; padding:6px 8px; margin-top:4px;}
+  .lb-toggle{display:flex; gap:8px; margin-bottom:12px;}
+  .lb-toggle-btn{flex:1; text-align:center; padding:10px; border-radius:12px; font-size:12px; font-weight:700; background: rgba(255,255,255,0.03); color:#75757c; border:1px solid rgba(255,255,255,0.06); cursor:pointer;}
+  .lb-toggle-btn.active{background: linear-gradient(135deg, var(--accent-bright), var(--accent)); color:#fff; border-color:transparent;}
   .member-row{display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:11px 12px; margin-bottom:8px; cursor:pointer;}
   .member-row .mav{width:36px;height:36px;border-radius:11px;overflow:hidden;flex-shrink:0;}
   .member-row .mav img{width:100%;height:100%;object-fit:cover;}
@@ -427,12 +449,25 @@
   <!-- 8. LEADERBOARD -->
   <div class="screen" id="screen-leaderboard">
     <div class="page-title" style="margin-bottom:14px">لیدربرد</div>
-    <div class="lb-tabs">
-      <div class="lb-tab" data-period="daily" onclick="switchLbTab('daily')">روزانه</div>
-      <div class="lb-tab active" data-period="weekly" onclick="switchLbTab('weekly')">هفتگی</div>
-      <div class="lb-tab" data-period="alltime" onclick="switchLbTab('alltime')">کلی</div>
+    <div class="lb-toggle">
+      <div class="lb-toggle-btn active" data-lbmode="players" onclick="switchLbMode('players')">بازیکنان</div>
+      <div class="lb-toggle-btn" data-lbmode="teams" onclick="switchLbMode('teams')">یگان‌ها</div>
     </div>
-    <div class="lb-list" id="lbList"></div>
+    <div id="lbPlayersView">
+      <div class="lb-tabs">
+        <div class="lb-tab" data-period="daily" onclick="switchLbTab('daily')">روزانه</div>
+        <div class="lb-tab active" data-period="weekly" onclick="switchLbTab('weekly')">هفتگی</div>
+        <div class="lb-tab" data-period="alltime" onclick="switchLbTab('alltime')">کلی</div>
+      </div>
+      <div class="lb-list" id="lbList"></div>
+    </div>
+    <div id="lbTeamsView" style="display:none">
+      <div class="lb-tabs">
+        <div class="lb-tab active" data-teamperiod="weekly" onclick="switchTeamLbTab('weekly')">هفتگی</div>
+        <div class="lb-tab" data-teamperiod="alltime" onclick="switchTeamLbTab('alltime')">کلی</div>
+      </div>
+      <div class="lb-list" id="teamLbList"></div>
+    </div>
   </div>
 
   <!-- 9. PROFILE -->
@@ -609,6 +644,19 @@
       <div class="settings-group-title" style="margin-top:20px">اعضای یگان</div>
       <div id="teamMembersList"></div>
 
+      <div id="podSection" style="display:none">
+        <div class="settings-group-title" style="margin-top:20px">رقابت پاد</div>
+        <div id="podTodayCard"></div>
+        <div id="podScheduleWrap" style="margin-top:14px; display:none">
+          <div class="settings-group-title">برنامه‌ی مسابقات</div>
+          <div id="podSchedule"></div>
+        </div>
+        <div id="podStandingsWrap" style="margin-top:14px; display:none">
+          <div class="settings-group-title">جدول پاد</div>
+          <div id="podStandings"></div>
+        </div>
+      </div>
+
       <button class="btn btn-secondary" style="margin-top:14px" onclick="leaveTeam()">ترک یگان</button>
     </div>
   </div>
@@ -718,7 +766,7 @@ function showScreen(name) {
 function navTo(name) {
   showScreen(name);
   if (name === "home") loadHomeData();
-  if (name === "leaderboard") loadLeaderboard(currentLbPeriod);
+  if (name === "leaderboard") { switchLbMode("players"); loadLeaderboard(currentLbPeriod); }
   if (name === "profile") loadProfileScreen();
   if (name === "team") loadTeamScreen();
 }
@@ -864,7 +912,7 @@ function startCooldownDisplay(remainingSeconds, fullDurationSeconds = 5 * 3600) 
     ring.style.strokeDashoffset = circumference * (1 - progress);
     if (remaining <= 0) {
       clearInterval(timerInterval);
-      if (currentSessionType === "mission") navTo("team"); else goHome();
+      if (currentSessionType === "mission" || currentSessionType === "pod_mission") navTo("team"); else goHome();
       return;
     }
     remaining--;
@@ -1195,6 +1243,7 @@ async function loadTeamScreen() {
       myTeamData = res;
       renderTeamDashboard(res);
       document.getElementById("teamDashboardView").style.display = "block";
+      loadPodStatus();
     } else {
       document.getElementById("teamNoTeamView").style.display = "block";
     }
@@ -1317,6 +1366,14 @@ function renderTeamDashboard(data) {
         </select>`
       : `<span style="font-size:10.5px;color:#75757c">${missionLabel}</span>`;
 
+    const podMissionControl = (isCommander && m.is_active_roster)
+      ? `<select class="mission-select pod-mission-select" data-prev="${m.pod_mission_category || ""}" onchange="onPodMissionSelectChange(this, ${m.telegram_id})" onclick="event.stopPropagation()">
+          <option value="">بدون دسته‌ی پاد</option>
+          ${Object.entries(TEAM_CATEGORY_LABELS).map(([k, v]) =>
+            `<option value="${k}" ${m.pod_mission_category === k ? "selected" : ""}>${v}</option>`).join("")}
+        </select>`
+      : "";
+
     const removeBtn = isCommander && !m.is_commander
       ? `<div class="remove-member-btn" onclick="event.stopPropagation(); removeMember(${m.telegram_id})">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -1332,6 +1389,7 @@ function renderTeamDashboard(data) {
       <div class="member-controls">
         ${removeBtn}
         ${missionControl}
+        ${podMissionControl}
       </div>
     </div>`;
   }).join("");
@@ -1537,6 +1595,203 @@ async function saveTeamLogo() {
     tg.showConfirm(confirmMsg, async (ok) => { if (ok) await doSave(); });
   } else if (confirm(confirmMsg)) {
     await doSave();
+  }
+}
+
+let currentLbMode = "players";
+let currentTeamLbPeriod = "weekly";
+
+function switchLbMode(mode) {
+  currentLbMode = mode;
+  document.querySelectorAll("[data-lbmode]").forEach(b => b.classList.toggle("active", b.dataset.lbmode === mode));
+  document.getElementById("lbPlayersView").style.display = mode === "players" ? "block" : "none";
+  document.getElementById("lbTeamsView").style.display = mode === "teams" ? "block" : "none";
+  if (mode === "teams") loadTeamLeaderboard(currentTeamLbPeriod);
+}
+
+function switchTeamLbTab(period) {
+  currentTeamLbPeriod = period;
+  document.querySelectorAll("[data-teamperiod]").forEach(t => t.classList.toggle("active", t.dataset.teamperiod === period));
+  loadTeamLeaderboard(period);
+}
+
+async function loadTeamLeaderboard(period) {
+  const list = document.getElementById("teamLbList");
+  list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">در حال بارگذاری...</div>';
+  try {
+    const res = await callFunction("get-team-leaderboard", { period });
+    const rows = res.leaderboard || [];
+    if (rows.length === 0) {
+      list.innerHTML = `
+        <div class="empty-lb">
+          <div class="empty-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+          <div class="empty-title">هنوز یگانی رتبه‌بندی نشده</div>
+          <div class="empty-desc">با کسب XP هفتگی یگانت رو بالا بیار</div>
+        </div>`;
+      return;
+    }
+    list.innerHTML = rows.map(t => `<div class="lb-row ${t.rank === 1 ? "top1" : ""}">
+        <div class="pos">${toFa(t.rank)}</div>
+        ${renderTeamFlag(t, 36)}
+        <div class="info"><div class="uname">${t.name}</div></div>
+        <div class="uscore">${toFa(t.score)}</div>
+      </div>`).join("");
+  } catch (e) {
+    list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">خطا در بارگذاری</div>';
+  }
+}
+
+async function loadPodStatus() {
+  try {
+    const data = await callFunction("get-pod-status", { telegram_id: USER_ID });
+    renderPodSection(data);
+  } catch (e) {
+    document.getElementById("podSection").style.display = "none";
+  }
+}
+
+function podResultLabel(result) {
+  if (result === "win") return "برد";
+  if (result === "loss") return "باخت";
+  if (result === "tie") return "مساوی";
+  return "-";
+}
+
+function renderPodSection(data) {
+  const section = document.getElementById("podSection");
+  if (!data || !data.in_pod) {
+    section.style.display = "none";
+    return;
+  }
+  section.style.display = "block";
+
+  const todayCard = document.getElementById("podTodayCard");
+  const m = data.today_match;
+  if (!m) {
+    todayCard.innerHTML = `<div class="pod-card"><div class="pod-status-note">امروز مسابقه‌ای برای یگان شما تعریف نشده</div></div>`;
+  } else {
+    const oppTeam = m.opponent_team || { name: "—" };
+    const myScore = m.my_score ?? "—";
+    const oppScore = m.opponent_score ?? "—";
+    let actionHtml = "";
+    if (m.status === "completed") {
+      actionHtml = `<div class="pod-status-note">نتیجه‌ی امروز: ${podResultLabel(m.result)}</div>`;
+    } else if (data.already_played_today) {
+      actionHtml = `<div class="pod-status-note">کوییز پاد امروزت رو زدی، منتظر بمون تا مسابقه تموم بشه</div>`;
+    } else if (!data.my_mission || !data.my_mission.pod_mission_category) {
+      actionHtml = `<div class="pod-status-note">فرمانده هنوز دسته‌ی رقابت پاد برات تعیین نکرده</div>`;
+    } else {
+      actionHtml = `<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="startPodMission()">شروع کوییز پاد</button>`;
+    }
+    todayCard.innerHTML = `
+      <div class="pod-card">
+        <div class="pod-vs-row">
+          <div class="pod-team-block">
+            <div class="pod-team-name">یگان شما</div>
+            <div class="pod-score">${toFa(myScore)}</div>
+          </div>
+          <div class="pod-vs-label">در مقابل</div>
+          <div class="pod-team-block">
+            ${renderTeamFlag(oppTeam, 40)}
+            <div class="pod-team-name">${oppTeam.name}</div>
+            <div class="pod-score">${toFa(oppScore)}</div>
+          </div>
+        </div>
+        ${actionHtml}
+      </div>`;
+  }
+
+  const scheduleWrap = document.getElementById("podScheduleWrap");
+  const scheduleEl = document.getElementById("podSchedule");
+  if (data.schedule && data.schedule.length > 0) {
+    scheduleWrap.style.display = "block";
+    scheduleEl.innerHTML = data.schedule.map(s => {
+      const opp = s.opponent_team || { name: "—" };
+      const resultCls = s.result || "";
+      const resultText = s.status === "completed" ? podResultLabel(s.result) : "برنامه‌ریزی‌شده";
+      return `<div class="pod-schedule-row">
+        <div class="psd">${s.match_date}</div>
+        <div class="pso">${renderTeamFlag(opp, 26)}<span>${opp.name}</span></div>
+        <div class="psr ${resultCls}">${resultText}</div>
+      </div>`;
+    }).join("");
+  } else {
+    scheduleWrap.style.display = "none";
+  }
+
+  const standingsWrap = document.getElementById("podStandingsWrap");
+  const standingsEl = document.getElementById("podStandings");
+  if (data.standings && data.standings.length > 0) {
+    standingsWrap.style.display = "block";
+    standingsEl.innerHTML = data.standings.map((s, idx) => {
+      const t = s.team || { name: "—" };
+      return `<div class="pod-standing-row">
+        <div class="psn">${toFa(idx + 1)}</div>
+        ${renderTeamFlag(t, 28)}
+        <div class="pst">${t.name}</div>
+        <div class="pss">${toFa(s.wins)}ب ${toFa(s.ties)}م ${toFa(s.losses)}ش</div>
+      </div>`;
+    }).join("");
+  } else {
+    standingsWrap.style.display = "none";
+  }
+}
+
+async function startPodMission() {
+  showScreen("loading");
+  document.getElementById("bottomNav").classList.remove("visible");
+  currentSessionType = "pod_mission";
+  try {
+    const res = await callFunction("start-pod-mission", { telegram_id: USER_ID });
+    if (res.error) {
+      if (tg) tg.showAlert(res.error); else alert(res.error);
+      navTo("team");
+      return;
+    }
+    if (!res.allowed) {
+      document.getElementById("cdDesc").textContent = "تا کوییز پاد بعدی";
+      startCooldownDisplay(res.remaining_seconds || 0, 24 * 3600);
+      document.getElementById("skipCooldownBtn").style.display = "none";
+      showScreen("cooldown");
+      return;
+    }
+    currentSession = res.session_id;
+    currentQuestions = res.questions;
+    currentQIndex = 0;
+    showQuestion();
+    showScreen("quiz");
+  } catch (e) {
+    showScreen("error");
+  }
+}
+
+async function assignPodMission(memberTelegramId, category) {
+  try {
+    await callFunction("assign-pod-mission", {
+      commander_telegram_id: USER_ID,
+      member_telegram_id: memberTelegramId,
+      pod_mission_category: category || null,
+    });
+    await loadTeamScreen();
+  } catch (e) { /* silent */ }
+}
+
+function onPodMissionSelectChange(selectEl, memberTelegramId) {
+  const newValue = selectEl.value;
+  const label = newValue ? (TEAM_CATEGORY_LABELS[newValue] || newValue) : "بدون دسته‌ی پاد";
+  const previousValue = selectEl.getAttribute("data-prev") || "";
+  const doIt = async () => {
+    await assignPodMission(memberTelegramId, newValue);
+    selectEl.setAttribute("data-prev", newValue);
+  };
+  const revert = () => { selectEl.value = previousValue; };
+  const msg = `مطمئنی می‌خوای دسته‌ی رقابت پاد این عضو رو به «${label}» تغییر بدی؟`;
+  if (tg) {
+    tg.showConfirm(msg, async (ok) => { if (ok) await doIt(); else revert(); });
+  } else if (confirm(msg)) {
+    doIt();
+  } else {
+    revert();
   }
 }
 
