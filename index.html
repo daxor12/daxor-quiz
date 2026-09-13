@@ -1616,13 +1616,21 @@ function renderTeamDashboard(data) {
 
 async function assignMission(memberTelegramId, category) {
   try {
-    await callFunction("assign-mission", {
+    const res = await callFunction("assign-mission", {
       commander_telegram_id: USER_ID,
       member_telegram_id: memberTelegramId,
       mission_category: category || null,
     });
+    if (res && res.error) {
+      if (tg) tg.showAlert(res.error); else alert(res.error);
+      return false;
+    }
     await loadTeamScreen();
-  } catch (e) { /* silent */ }
+    return true;
+  } catch (e) {
+    if (tg) tg.showAlert("خطا در ثبت ماموریت"); else alert("خطا در ثبت ماموریت");
+    return false;
+  }
 }
 
 function onMissionSelectChange(selectEl, memberTelegramId) {
@@ -1630,8 +1638,9 @@ function onMissionSelectChange(selectEl, memberTelegramId) {
   const label = newValue ? (TEAM_CATEGORY_LABELS[newValue] || newValue) : "بدون ماموریت";
   const previousValue = selectEl.getAttribute("data-prev") || "";
   const doIt = async () => {
-    await assignMission(memberTelegramId, newValue);
-    selectEl.setAttribute("data-prev", newValue);
+    const ok = await assignMission(memberTelegramId, newValue);
+    if (ok) selectEl.setAttribute("data-prev", newValue);
+    else revert();
   };
   const revert = () => { selectEl.value = previousValue; };
   const msg = `مطمئنی می‌خوای ماموریت این عضو رو به «${label}» تغییر بدی؟`;
@@ -2002,13 +2011,21 @@ async function startPodMission() {
 
 async function assignPodMission(memberTelegramId, category) {
   try {
-    await callFunction("assign-pod-mission", {
+    const res = await callFunction("assign-pod-mission", {
       commander_telegram_id: USER_ID,
       member_telegram_id: memberTelegramId,
       pod_mission_category: category || null,
     });
+    if (res && res.error) {
+      if (tg) tg.showAlert(res.error); else alert(res.error);
+      return false;
+    }
     await loadTeamScreen();
-  } catch (e) { /* silent */ }
+    return true;
+  } catch (e) {
+    if (tg) tg.showAlert("خطا در ثبت دسته‌ی رقابت پاد"); else alert("خطا در ثبت دسته‌ی رقابت پاد");
+    return false;
+  }
 }
 
 function onPodMissionSelectChange(selectEl, memberTelegramId) {
@@ -2016,8 +2033,9 @@ function onPodMissionSelectChange(selectEl, memberTelegramId) {
   const label = newValue ? (TEAM_CATEGORY_LABELS[newValue] || newValue) : "بدون دسته‌ی پاد";
   const previousValue = selectEl.getAttribute("data-prev") || "";
   const doIt = async () => {
-    await assignPodMission(memberTelegramId, newValue);
-    selectEl.setAttribute("data-prev", newValue);
+    const ok = await assignPodMission(memberTelegramId, newValue);
+    if (ok) selectEl.setAttribute("data-prev", newValue);
+    else revert();
   };
   const revert = () => { selectEl.value = previousValue; };
   const msg = `مطمئنی می‌خوای دسته‌ی رقابت پاد این عضو رو به «${label}» تغییر بدی؟`;
