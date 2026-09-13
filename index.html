@@ -1805,4 +1805,308 @@ function switchTeamLbTab(period) {
   loadTeamLeaderboard(period);
 }
 
-asyn
+async function loadTeamLeaderboard(period) {
+  const list = document.getElementById("teamLbList");
+  list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">در حال بارگذاری...</div>';
+  try {
+    const res = await callFunction("get-team-leaderboard", { period });
+    const rows = res.leaderboard || [];
+    if (rows.length === 0) {
+      list.innerHTML = `
+        <div class="empty-lb">
+          <div class="empty-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+          <div class="empty-title">هنوز یگانی رتبه‌بندی نشده</div>
+          <div class="empty-desc">با کسب XP هفتگی یگانت رو بالا بیار</div>
+        </div>`;
+      return;
+    }
+    list.innerHTML = rows.map(t => `<div class="lb-row ${t.rank === 1 ? "top1" : ""}">
+        <div class="pos">${toFa(t.rank)}</div>
+        ${renderTeamFlag(t, 36)}
+        <div class="info"><div class="uname">${t.name}</div></div>
+        <div class="uscore">${toFa(t.score)}</div>
+      </div>`).join("");
+  } catch (e) {
+    list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">خطا در بارگذاری</div>';
+  }
+}
+
+async function loadPodStatus() {
+  try {
+    const data = await callFunction("get-pod-status", { telegram_id: USER_ID });
+    renderPodSection(data);
+  } catch (e) {
+    document.getElementById("podSection").style.display = "none";
+  }
+}
+
+function renderPodCategoryBreakdown(breakdown) {
+  if (!breakdown || breakdown.length === 0) return "";
+  const rows = breakdown.map(b => {
+    const myText = b.my_member ? `${b.my_member.username} (${toFa(b.my_member.score)})` : "—";
+    const oppText = b.opponent_member ? `${b.opponent_member.username} (${toFa(b.opponent_member.score)})` : "—";
+    const myCls = b.my_member ? "" : "empty";
+    const oppCls = b.opponent_member ? "" : "empty";
+    return `<div class="pod-cat-row">
+      <div class="pod-cat-side ${myCls}">${myText}</div>
+      <div class="pod-cat-label">${TEAM_CATEGORY_LABELS[b.category]}</div>
+      <div class="pod-cat-side ${oppCls}">${oppText}</div>
+    </div>`;
+  }).join("");
+  return `<div class="pod-cat-list">${rows}</div>`;
+}
+function podResultLabel(result) {
+  if (result === "win") return "برد";
+  if (result === "loss") return "باخت";
+  if (result === "tie") return "مساوی";
+  return "-";
+}
+
+function renderPodSection(data) {
+  const section = document.getElementById("podSection");
+  if (!data || !data.in_pod) {
+    section.style.display = "none";
+    return;
+  }
+  section.style.display = "block";
+
+  const todayCard = document.getElementById("podTodayCard");
+  const m = data.today_match;
+  if (!m) {
+    todayCard.innerHTML = `<div class="pod-card"><div class="pod-status-note">امروز مسابقه‌ای برای یگان شما تعریف نشده</div></div>`;
+  } else {
+    const oppTeam = m.opponent_team || { name: "—" };
+    const myScore = m.my_score ?? "—";
+    const oppScore = m.opponent_score ?? "—";
+    let actionHtml = "";
+    if (m.status === "completed") {
+      actionHtml = `<div class="pod-status-note">نتیجه‌ی امروز: ${podResultLabel(m.result)}</div>`;
+    } else if (data.already_played_today) {
+      actionHtml = `<div class="pod-status-note">کوییز پاد امروزت رو زدی، منتظر بمون تا مسابقه تموم بشه</div>`;
+    } else if (!data.my_mission || !data.my_mission.pod_mission_category) {
+      actionHtml = `<div class="pod-status-note">فرمانده هنوز دسته‌ی رقابت پاد برات تعیین نکرده</div>`;
+    } else {
+      actionHtml = `<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="startPodMission()">شروع کوییز پاد</button>`;
+    }
+    todayCard.innerHTML = `
+      <div class="pod-card">
+        <div class="pod-vs-row">
+          <div class="pod-team-block">
+            <div class="pod-team-name">یگان شما</div>
+            <div class="pod-score">${toFa(myScore)}</div>
+          </div>
+          <div class="pod-vs-label">در مقابل</div>
+          <div class="pod-team-block">
+            ${renderTeamFlag(oppTeam, 40)}
+            <div class="pod-team-name">${oppTeam.name}</div>
+            <div class="pod-score">${toFa(oppScore)}</div>
+          </div>
+        </div>
+        ${actionHtml}
+        ${renderPodCategoryBreakdown(m.category_breakdown)}
+      </div>`;
+  }
+
+  const scheduleWrap = document.getElementById("podScheduleWrap");
+  const scheduleEl = document.getElementById("podSchedule");
+  if (data.schedule && data.schedule.length > 0) {
+    scheduleWrap.style.display = "block";
+    scheduleEl.innerHTML = data.schedule.map(s => {
+      const opp = s.opponent_team || { name: "—" };
+      const resultCls = s.result || "";
+      const resultText = s.status === "completed" ? podResultLabel(s.result) : "برنامه‌ریزی‌شده";
+      return `<div class="pod-schedule-row">
+        <div class="psd">${s.match_date}</div>
+        <div class="pso">${renderTeamFlag(opp, 26)}<span>${opp.name}</span></div>
+        <div class="psr ${resultCls}">${resultText}</div>
+      </div>`;
+    }).join("");
+  } else {
+    scheduleWrap.style.display = "none";
+  }
+
+  const standingsWrap = document.getElementById("podStandingsWrap");
+  const standingsEl = document.getElementById("podStandings");
+  if (data.standings && data.standings.length > 0) {
+    standingsWrap.style.display = "block";
+    standingsEl.innerHTML = data.standings.map((s, idx) => {
+      const t = s.team || { name: "—" };
+      return `<div class="pod-standing-row">
+        <div class="psn">${toFa(idx + 1)}</div>
+        ${renderTeamFlag(t, 28)}
+        <div class="pst">${t.name}</div>
+        <div class="pss">${toFa(s.wins)}ب ${toFa(s.ties)}م ${toFa(s.losses)}ش</div>
+      </div>`;
+    }).join("");
+  } else {
+    standingsWrap.style.display = "none";
+  }
+}
+
+async function startPodMission() {
+  showScreen("loading");
+  document.getElementById("bottomNav").classList.remove("visible");
+  currentSessionType = "pod_mission";
+  try {
+    const res = await callFunction("start-pod-mission", { telegram_id: USER_ID });
+    if (res.error) {
+      if (tg) tg.showAlert(res.error); else alert(res.error);
+      navTo("team");
+      return;
+    }
+    if (!res.allowed) {
+      document.getElementById("cdDesc").textContent = "تا کوییز پاد بعدی";
+      startCooldownDisplay(res.remaining_seconds || 0, 24 * 3600);
+      document.getElementById("skipCooldownBtn").style.display = "none";
+      showScreen("cooldown");
+      return;
+    }
+    currentSession = res.session_id;
+    currentQuestions = res.questions;
+    currentQIndex = 0;
+    showQuestion();
+    showScreen("quiz");
+  } catch (e) {
+    showScreen("error");
+  }
+}
+
+async function assignPodMission(memberTelegramId, category) {
+  try {
+    await callFunction("assign-pod-mission", {
+      commander_telegram_id: USER_ID,
+      member_telegram_id: memberTelegramId,
+      pod_mission_category: category || null,
+    });
+    await loadTeamScreen();
+  } catch (e) { /* silent */ }
+}
+
+function onPodMissionSelectChange(selectEl, memberTelegramId) {
+  const newValue = selectEl.value;
+  const label = newValue ? (TEAM_CATEGORY_LABELS[newValue] || newValue) : "بدون دسته‌ی پاد";
+  const previousValue = selectEl.getAttribute("data-prev") || "";
+  const doIt = async () => {
+    await assignPodMission(memberTelegramId, newValue);
+    selectEl.setAttribute("data-prev", newValue);
+  };
+  const revert = () => { selectEl.value = previousValue; };
+  const msg = `مطمئنی می‌خوای دسته‌ی رقابت پاد این عضو رو به «${label}» تغییر بدی؟`;
+  if (tg) {
+    tg.showConfirm(msg, async (ok) => { if (ok) await doIt(); else revert(); });
+  } else if (confirm(msg)) {
+    doIt();
+  } else {
+    revert();
+  }
+}
+
+async function loadShop() {
+  try {
+    const res = await callFunction("get-shop-catalog", { telegram_id: USER_ID });
+    if (res.error) return;
+    shopState.catalog = res.catalog || SHOP_CATALOG;
+    shopState.owned = res.owned_keys || [];
+    shopState.equippedFrame = res.equipped_frame;
+    shopState.equippedBadge = res.equipped_badge;
+    shopState.coins = res.coins || 0;
+    document.getElementById("shopCoinBalance").textContent = `${toFa(shopState.coins)} سکه`;
+    renderShopGrid();
+  } catch (e) { /* silent */ }
+}
+
+function switchShopTab(tab) {
+  shopState.tab = tab;
+  document.querySelectorAll("[data-shoptab]").forEach(t => t.classList.toggle("active", t.dataset.shoptab === tab));
+  renderShopGrid();
+}
+
+function renderShopGrid() {
+  const grid = document.getElementById("shopGrid");
+  const items = shopState.catalog.filter(i => i.type === shopState.tab);
+  const equippedKey = shopState.tab === "frame" ? shopState.equippedFrame : shopState.equippedBadge;
+
+  grid.innerHTML = items.map(item => {
+    const owned = shopState.owned.includes(item.key);
+    const isEquipped = equippedKey === item.key;
+    let preview;
+    if (item.type === "frame") {
+      preview = `<div class="avatar frame-${item.key}" style="width:56px;height:56px"><img src="${avatarPath(currentAvatarIndex)}"></div>`;
+    } else {
+      preview = renderBadgeIcon(item.key, 34);
+    }
+    let btnHtml;
+    if (!owned) {
+      btnHtml = `<button class="shop-item-btn buy" onclick="buyShopItemFn('${item.key}')">خرید (${toFa(item.price)})</button>`;
+    } else if (isEquipped) {
+      btnHtml = `<button class="shop-item-btn equipped" onclick="equipShopItemFn('${item.type}', null)">برداشتن</button>`;
+    } else {
+      btnHtml = `<button class="shop-item-btn equip" onclick="equipShopItemFn('${item.type}', '${item.key}')">پوشیدن</button>`;
+    }
+    return `<div class="shop-item-card rarity-${item.rarity}">
+      <div class="shop-item-preview">${preview}</div>
+      <div class="shop-item-name">${item.name}</div>
+      ${!owned ? `<div class="shop-item-price">${toFa(item.price)} سکه</div>` : ""}
+      ${btnHtml}
+    </div>`;
+  }).join("");
+}
+
+async function buyShopItemFn(itemKey) {
+  const doBuy = async () => {
+    try {
+      const res = await callFunction("buy-shop-item", { telegram_id: USER_ID, item_key: itemKey });
+      if (res.error) { if (tg) tg.showAlert(res.error); else alert(res.error); return; }
+      await loadShop();
+      if (tg) tg.showAlert("خرید موفق ✅");
+    } catch (e) { /* silent */ }
+  };
+  const item = shopState.catalog.find(i => i.key === itemKey);
+  const msg = `خرید «${item.name}» به قیمت ${toFa(item.price)} سکه انجام بشه؟`;
+  if (tg) {
+    tg.showConfirm(msg, async (ok) => { if (ok) await doBuy(); });
+  } else if (confirm(msg)) {
+    await doBuy();
+  }
+}
+
+async function equipShopItemFn(itemType, itemKey) {
+  try {
+    const res = await callFunction("equip-shop-item", { telegram_id: USER_ID, item_type: itemType, item_key: itemKey });
+    if (res.error) { if (tg) tg.showAlert(res.error); else alert(res.error); return; }
+    if (itemType === "frame") shopState.equippedFrame = itemKey;
+    else shopState.equippedBadge = itemKey;
+    renderShopGrid();
+    applyEquippedCosmetics();
+  } catch (e) { /* silent */ }
+}
+
+function applyEquippedCosmetics() {
+  const frameKey = shopState.equippedFrame;
+  ["profAvatar", "homeAvatar"].forEach(imgId => {
+    const img = document.getElementById(imgId);
+    if (!img) return;
+    const container = img.parentElement;
+    container.className = container.className.replace(/\bframe-\S+/g, "").trim();
+    if (frameKey) container.classList.add(`frame-${frameKey}`);
+  });
+  const badgeSlot = document.getElementById("profNameBadge");
+  if (badgeSlot) badgeSlot.innerHTML = renderBadgeIcon(shopState.equippedBadge, 16);
+}
+
+async function loadEquippedCosmetics() {
+  try {
+    const res = await callFunction("get-shop-catalog", { telegram_id: USER_ID });
+    if (res.error) return;
+    shopState.catalog = res.catalog || SHOP_CATALOG;
+    shopState.owned = res.owned_keys || [];
+    shopState.equippedFrame = res.equipped_frame;
+    shopState.equippedBadge = res.equipped_badge;
+    applyEquippedCosmetics();
+  } catch (e) { /* silent */ }
+}
+
+init();
+</script>
+</body>
+  </html>
