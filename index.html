@@ -609,6 +609,18 @@
         </button>
       </div>
     </div>
+
+    <div class="action-card" style="background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); margin-top:14px">
+      <div class="ac-head" style="color:#fff">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffb22d" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M12 22V7"/><path d="M2 12h20"/><path d="M17 7c-1.5 0-3-1-3-3a2.5 2.5 0 0 1 5 0c0 2-2 3-2 3Z"/><path d="M7 7c1.5 0 3-1 3-3a2.5 2.5 0 0 0-5 0c0 2 2 3 2 3Z"/></svg>
+        کد هدیه
+      </div>
+      <div class="ac-row">
+        <input class="form-input" id="giftCodeInput" placeholder="کد هدیه رو وارد کن" style="margin-bottom:0; flex:1; direction:ltr; text-align:center">
+        <button class="ac-btn" style="width:auto;padding:0 16px" onclick="redeemGiftCode()">ثبت</button>
+      </div>
+      <div id="giftCodeMsg" style="text-align:center;font-size:11px;margin-top:8px"></div>
+    </div>
   </div>
 
   <!-- 10.b AVATAR PICKER -->
@@ -2121,6 +2133,25 @@ async function loadEquippedCosmetics() {
     shopState.equippedBadge = res.equipped_badge;
     applyEquippedCosmetics();
   } catch (e) { /* silent */ }
+}
+
+async function redeemGiftCode() {
+  const input = document.getElementById("giftCodeInput");
+  const msg = document.getElementById("giftCodeMsg");
+  const code = input.value.trim();
+  msg.style.color = "#ff6b6b";
+  msg.textContent = "";
+  if (!code) { msg.textContent = "کد رو وارد کن"; return; }
+  try {
+    const res = await callFunction("redeem-gift-code", { telegram_id: USER_ID, code });
+    if (res.error) { msg.textContent = res.error; return; }
+    msg.style.color = "#22c55e";
+    msg.textContent = `${toFa(res.coin_amount)} سکه به حسابت اضافه شد ✅`;
+    input.value = "";
+    document.getElementById("profCoins").textContent = `${toFa(res.new_balance)} سکه`;
+  } catch (e) {
+    msg.textContent = "خطا در ثبت کد";
+  }
 }
 
 init();
