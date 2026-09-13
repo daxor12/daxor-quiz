@@ -573,7 +573,7 @@
         </div>
       </div>
       <div class="hero-info">
-        <div class="p-name" id="profName">سرباز <span id="profNameBadge" style="display:inline-flex;vertical-align:middle"></span></div>
+        <div class="p-name" id="profName"><span id="profNameText">سرباز</span> <span id="profNameBadge" style="display:inline-flex;vertical-align:middle"></span></div>
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px">
           <div class="p-rank-chip" style="margin-top:0"><img id="profRankImg" src="assets/ranks/rank-1.png" alt=""><span id="profRankName">سرباز صفر</span></div>
           <div class="p-rank-chip p-rank-chip--brass" style="margin-top:0">
@@ -1180,7 +1180,7 @@ async function loadLeaderboard(period) {
 async function loadProfileScreen() {
   try {
     const profile = await callFunction("get-profile", { telegram_id: USER_ID });
-    document.getElementById("profName").textContent = profile.username || "سرباز";
+    document.getElementById("profNameText").textContent = profile.username || "سرباز";
     document.getElementById("profRankName").textContent = profile.current_rank || "سرباز صفر";
     document.getElementById("profRankImg").src = rankImgPath(profile.current_rank);
     document.getElementById("profGames").textContent = toFa(profile.games_played || 0);
@@ -2031,7 +2031,7 @@ function renderShopGrid() {
     const isEquipped = equippedKey === item.key;
     let preview;
     if (item.type === "frame") {
-      preview = `<div class="avatar frame-${item.key}" style="width:56px;height:56px"><img src="${avatarPath(currentAvatarIndex)}"></div>`;
+      preview = `<div class="avatar frame-${item.key.replace('frame_', '')}" style="width:56px;height:56px"><img src="${avatarPath(currentAvatarIndex)}"></div>`;
     } else {
       preview = renderBadgeIcon(item.key, 34);
     }
@@ -2088,7 +2088,7 @@ function applyEquippedCosmetics() {
     if (!img) return;
     const container = img.parentElement;
     container.className = container.className.replace(/\bframe-\S+/g, "").trim();
-    if (frameKey) container.classList.add(`frame-${frameKey}`);
+    if (frameKey) container.classList.add(`frame-${frameKey.replace('frame_', '')}`);
   });
   const badgeSlot = document.getElementById("profNameBadge");
   if (badgeSlot) badgeSlot.innerHTML = renderBadgeIcon(shopState.equippedBadge, 16);
