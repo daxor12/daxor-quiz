@@ -899,6 +899,12 @@ function toFa(num) {
   return String(num).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
 }
 
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str ?? "";
+  return div.innerHTML;
+}
+
 async function callFunction(name, body) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
     method: "POST",
@@ -1183,7 +1189,7 @@ async function loadLeaderboard(period) {
       return `<div class="lb-row ${cls}" onclick="openPublicProfile(${r.telegram_id})">
         <div class="pos">${toFa(r.rank)}</div>
         <div class="av${selfFrameClass}"><img src="${avImg}" alt=""></div>
-        <div class="info"><div class="uname">${isSelf ? "شما" : r.username} ${selfBadgeHtml}</div></div>
+        <div class="info"><div class="uname">${isSelf ? "شما" : escapeHtml(r.username)} ${selfBadgeHtml}</div></div>
         <div class="uscore">${toFa(r.score)}</div>
       </div>`;
     }).join("");
@@ -1502,7 +1508,7 @@ async function searchTeams() {
       <div class="team-search-row">
         <div style="display:flex; align-items:center; gap:10px">
           ${renderTeamFlag(t, 34)}
-          <div><div class="tn">${t.name}</div><div class="tm">${toFa(t.member_count)}/۱۰ عضو</div></div>
+          <div><div class="tn">${escapeHtml(t.name)}</div><div class="tm">${toFa(t.member_count)}/۱۰ عضو</div></div>
         </div>
         <button class="btn btn-secondary" style="width:auto;padding:9px 16px" onclick="joinTeamById('${t.id}')">پیوستن</button>
       </div>`).join("");
@@ -1602,7 +1608,7 @@ function renderTeamDashboard(data) {
     return `<div class="member-row" onclick="openPublicProfile(${m.telegram_id})">
       <div class="mav${selfFrameClass}"><img src="${avatarPath(m.avatar_index || 3)}"></div>
       <div class="minfo">
-        <div class="mname">${m.username} ${selfBadgeHtml} ${badges}</div>
+        <div class="mname">${escapeHtml(m.username)} ${selfBadgeHtml} ${badges}</div>
         <div class="msub"><span>Lv ${toFa(m.level ?? 1)}</span><span>${toFa(m.total_score ?? 0)} امتیاز</span></div>
       </div>
       <div class="member-controls">
@@ -1861,7 +1867,7 @@ async function loadTeamLeaderboard(period) {
     list.innerHTML = rows.map(t => `<div class="lb-row ${t.rank === 1 ? "top1" : ""}">
         <div class="pos">${toFa(t.rank)}</div>
         ${renderTeamFlag(t, 36)}
-        <div class="info"><div class="uname">${t.name}</div></div>
+        <div class="info"><div class="uname">${escapeHtml(t.name)}</div></div>
         <div class="uscore">${toFa(t.score)}</div>
       </div>`).join("");
   } catch (e) {
@@ -1881,8 +1887,8 @@ async function loadPodStatus() {
 function renderPodCategoryBreakdown(breakdown) {
   if (!breakdown || breakdown.length === 0) return "";
   const rows = breakdown.map(b => {
-    const myText = b.my_member ? `${b.my_member.username} (${toFa(b.my_member.score)})` : "—";
-    const oppText = b.opponent_member ? `${b.opponent_member.username} (${toFa(b.opponent_member.score)})` : "—";
+    const myText = b.my_member ? `${escapeHtml(b.my_member.username)} (${toFa(b.my_member.score)})` : "—";
+    const oppText = b.opponent_member ? `${escapeHtml(b.opponent_member.username)} (${toFa(b.opponent_member.score)})` : "—";
     const myCls = b.my_member ? "" : "empty";
     const oppCls = b.opponent_member ? "" : "empty";
     return `<div class="pod-cat-row">
@@ -1936,7 +1942,7 @@ function renderPodSection(data) {
           <div class="pod-vs-label">در مقابل</div>
           <div class="pod-team-block">
             ${renderTeamFlag(oppTeam, 40)}
-            <div class="pod-team-name">${oppTeam.name}</div>
+            <div class="pod-team-name">${escapeHtml(oppTeam.name)}</div>
             <div class="pod-score">${toFa(oppScore)}</div>
           </div>
         </div>
@@ -1955,7 +1961,7 @@ function renderPodSection(data) {
       const resultText = s.status === "completed" ? podResultLabel(s.result) : "برنامه‌ریزی‌شده";
       return `<div class="pod-schedule-row">
         <div class="psd">${s.match_date}</div>
-        <div class="pso">${renderTeamFlag(opp, 26)}<span>${opp.name}</span></div>
+        <div class="pso">${renderTeamFlag(opp, 26)}<span>${escapeHtml(opp.name)}</span></div>
         <div class="psr ${resultCls}">${resultText}</div>
       </div>`;
     }).join("");
@@ -1972,7 +1978,7 @@ function renderPodSection(data) {
       return `<div class="pod-standing-row">
         <div class="psn">${toFa(idx + 1)}</div>
         ${renderTeamFlag(t, 28)}
-        <div class="pst">${t.name}</div>
+        <div class="pst">${escapeHtml(t.name)}</div>
         <div class="pss">${toFa(s.wins)}ب ${toFa(s.ties)}م ${toFa(s.losses)}ش</div>
       </div>`;
     }).join("");
