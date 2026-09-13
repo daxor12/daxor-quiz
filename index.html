@@ -274,6 +274,83 @@
   .logo-emblem-cell.active { border-color:var(--accent-bright); background:rgba(var(--accent-rgb),0.12); }
   .le-thumb { width:70%; height:70%; background-color:#e5e5e5; -webkit-mask-size:contain; mask-size:contain; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; }
   .le-none { font-size:9px; color:var(--text-dim); text-align:center; }
+  /* ===== قاب‌های آواتار ===== */
+  .frame-common_blue { box-shadow: 0 0 0 3px #3b82f6; }
+  .frame-common_red { box-shadow: 0 0 0 3px #ef4444; }
+  .frame-common_gold { box-shadow: 0 0 0 3px #ffb22d; }
+
+  @keyframes frameGlowPulse { 0%,100% { box-shadow: 0 0 6px 2px var(--fc), 0 0 0 3px var(--fc); } 50% { box-shadow: 0 0 14px 5px var(--fc), 0 0 0 3px var(--fc); } }
+  .frame-rare_glow_blue { --fc:#3b82f6; animation: frameGlowPulse 2s ease-in-out infinite; }
+  .frame-rare_glow_purple { --fc:#a855f7; animation: frameGlowPulse 2s ease-in-out infinite; }
+  .frame-rare_glow_green { --fc:#22c55e; animation: frameGlowPulse 2s ease-in-out infinite; }
+
+  @keyframes frameFireFlicker {
+    0% { box-shadow: 0 0 8px 3px var(--f1), 0 0 0 3px var(--f1); }
+    20% { box-shadow: 0 0 14px 5px var(--f2), 0 0 0 3px var(--f2); }
+    40% { box-shadow: 0 0 6px 2px var(--f1), 0 0 0 3px var(--f1); }
+    60% { box-shadow: 0 0 16px 6px var(--f2), 0 0 0 3px var(--f2); }
+    80% { box-shadow: 0 0 10px 4px var(--f1), 0 0 0 3px var(--f1); }
+    100% { box-shadow: 0 0 8px 3px var(--f1), 0 0 0 3px var(--f1); }
+  }
+  .frame-legend_fire_classic { --f1:#ff6b1a; --f2:#ffd93d; animation: frameFireFlicker 0.6s ease-in-out infinite; }
+  .frame-legend_fire_blue { --f1:#1ac8ff; --f2:#c9f7ff; animation: frameFireFlicker 0.6s ease-in-out infinite; }
+  .frame-legend_toxic { --f1:#2fff5e; --f2:#0a7d2e; animation: frameFireFlicker 0.9s ease-in-out infinite; }
+
+  @keyframes frameElectroFlicker {
+    0%,100% { box-shadow: 0 0 10px 4px var(--ec), 0 0 0 3px var(--ec); opacity:1; }
+    10% { box-shadow: 0 0 2px 1px var(--ec), 0 0 0 3px var(--ec); opacity:0.6; }
+    20% { box-shadow: 0 0 16px 6px var(--ec), 0 0 0 3px var(--ec); opacity:1; }
+    35% { box-shadow: 0 0 3px 1px var(--ec), 0 0 0 3px var(--ec); opacity:0.7; }
+    50% { box-shadow: 0 0 14px 5px var(--ec), 0 0 0 3px var(--ec); opacity:1; }
+    70% { box-shadow: 0 0 4px 2px var(--ec), 0 0 0 3px var(--ec); opacity:0.8; }
+  }
+  .frame-legend_electro_purple { --ec:#c084fc; animation: frameElectroFlicker 1.2s steps(1) infinite; }
+  .frame-legend_electro_blue { --ec:#67e8f9; animation: frameElectroFlicker 1s steps(1) infinite; }
+
+  @keyframes frameFrostShimmer {
+    0%,100% { box-shadow: 0 0 8px 3px #bfe9ff, 0 0 0 3px #bfe9ff; }
+    50% { box-shadow: 0 0 16px 6px #eaffff, 0 0 0 3px #eaffff; }
+  }
+  .frame-legend_frost { animation: frameFrostShimmer 2.5s ease-in-out infinite; }
+
+  @keyframes frameGalaxyCycle {
+    0% { box-shadow: 0 0 10px 4px #4c1d95, 0 0 0 3px #4c1d95; }
+    33% { box-shadow: 0 0 10px 4px #a78bfa, 0 0 0 3px #a78bfa; }
+    66% { box-shadow: 0 0 10px 4px #1e1b4b, 0 0 0 3px #1e1b4b; }
+    100% { box-shadow: 0 0 10px 4px #4c1d95, 0 0 0 3px #4c1d95; }
+  }
+  .frame-legend_galaxy { animation: frameGalaxyCycle 3s linear infinite; }
+
+  @keyframes frameGoldenCycle {
+    0% { box-shadow: 0 0 12px 4px #ffd700, 0 0 0 3px #ffd700; }
+    50% { box-shadow: 0 0 18px 6px #fff5c0, 0 0 0 3px #fff5c0; }
+    100% { box-shadow: 0 0 12px 4px #ffd700, 0 0 0 3px #ffd700; }
+  }
+  .frame-legend_golden { animation: frameGoldenCycle 2s ease-in-out infinite; }
+
+  /* ===== نشان‌ها ===== */
+  .name-badge { width:16px; height:16px; flex-shrink:0; vertical-align:middle; }
+  .name-badge.rarity-common { color:#94a3b8; }
+  .name-badge.rarity-rare { color:#60a5fa; filter: drop-shadow(0 0 2px rgba(96,165,250,0.5)); }
+  .name-badge.rarity-legendary { color:#ffd700; }
+  @keyframes badgeGlow { 0%,100% { filter: drop-shadow(0 0 2px currentColor); } 50% { filter: drop-shadow(0 0 6px currentColor); } }
+  .name-badge.rarity-legendary { animation: badgeGlow 1.6s ease-in-out infinite; }
+
+  /* ===== صفحه‌ی فروشگاه ===== */
+  .shop-tabs { display:flex; gap:8px; margin-bottom:14px; }
+  .shop-coin-bar { display:flex; align-items:center; justify-content:center; gap:8px; background: rgba(255,178,45,0.1); border:1px solid rgba(255,178,45,0.3); border-radius:14px; padding:10px; margin-bottom:14px; font-size:13px; font-weight:800; color:#ffb22d; }
+  .shop-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  .shop-item-card { border-radius:16px; padding:14px 10px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); }
+  .shop-item-card.rarity-common { border-color: rgba(148,163,184,0.3); }
+  .shop-item-card.rarity-rare { border-color: rgba(96,165,250,0.4); background: rgba(96,165,250,0.05); }
+  .shop-item-card.rarity-legendary { border-color: rgba(255,215,0,0.5); background: rgba(255,215,0,0.06); }
+  .shop-item-preview { width:56px; height:56px; border-radius:16px; background: linear-gradient(135deg,#2a2930,#1a191e); display:flex; align-items:center; justify-content:center; }
+  .shop-item-name { font-size:11px; font-weight:700; }
+  .shop-item-price { font-size:10.5px; color:#ffb22d; font-weight:700; }
+  .shop-item-btn { width:100%; border:none; border-radius:10px; padding:8px; font-size:10.5px; font-weight:800; font-family:inherit; cursor:pointer; }
+  .shop-item-btn.buy { background: linear-gradient(135deg, var(--accent-bright), var(--accent)); color:#fff; }
+  .shop-item-btn.equip { background: rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.4); }
+  .shop-item-btn.equipped { background: rgba(255,255,255,0.05); color:#75757c; border:1px solid rgba(255,255,255,0.1); }
   .pod-card{background: linear-gradient(135deg, rgba(59,130,246,0.14), rgba(59,130,246,0.03)); border:1px solid rgba(59,130,246,0.3); border-radius:16px; padding:14px;}
   .pod-vs-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .pod-team-block{display:flex; flex-direction:column; align-items:center; gap:6px; flex:1;}
@@ -480,6 +557,9 @@
   <div class="screen" id="screen-profile">
     <div class="top-row">
       <div class="page-title">پروفایل</div>
+      <div class="iconbtn" onclick="showScreen('shop'); loadShop();" style="margin-left:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffb22d" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      </div>
       <div class="iconbtn" onclick="showScreen('settings')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </div>
@@ -493,7 +573,7 @@
         </div>
       </div>
       <div class="hero-info">
-        <div class="p-name" id="profName">سرباز</div>
+        <div class="p-name" id="profName">سرباز <span id="profNameBadge" style="display:inline-flex;vertical-align:middle"></span></div>
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px">
           <div class="p-rank-chip" style="margin-top:0"><img id="profRankImg" src="assets/ranks/rank-1.png" alt=""><span id="profRankName">سرباز صفر</span></div>
           <div class="p-rank-chip p-rank-chip--brass" style="margin-top:0">
@@ -587,6 +667,27 @@
         <div class="toggle on" id="soundToggle" onclick="toggleSound()"><div class="toggle-dot"></div></div>
       </div>
     </div>
+  </div>
+
+  <!-- 11.b SHOP -->
+  <div class="screen" id="screen-shop">
+    <div class="back-row">
+      <div class="back-btn" onclick="showScreen('profile')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg></div>
+      <div class="page-title">فروشگاه</div>
+      <div class="spacer34"></div>
+    </div>
+
+    <div class="shop-coin-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffb22d" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9 10h6"/></svg>
+      <span id="shopCoinBalance">۰ سکه</span>
+    </div>
+
+    <div class="shop-tabs">
+      <div class="lb-tab active" data-shoptab="frame" onclick="switchShopTab('frame')">قاب‌ها</div>
+      <div class="lb-tab" data-shoptab="badge" onclick="switchShopTab('badge')">نشان‌ها</div>
+    </div>
+
+    <div id="shopGrid" class="shop-grid"></div>
   </div>
 
   <!-- 12. TEAM -->
@@ -857,6 +958,7 @@ async function loadHomeData() {
     document.getElementById("homeLevel").textContent = toFa(profile.level || 1);
     currentAvatarIndex = profile.avatar_index || 3;
     applyAvatarToUI();
+    await loadEquippedCosmetics();
   } catch (e) { /* کاربر جدید، مقادیر پیش‌فرض می‌مونه */ }
 }
 
@@ -1093,6 +1195,7 @@ async function loadProfileScreen() {
     currentAvatarIndex = profile.avatar_index || 3;
     applyAvatarToUI();
     renderCategoryStats("profCatStats", profile.category_stats);
+    await loadEquippedCosmetics();
   } catch (e) { /* مقادیر پیش‌فرض می‌مونه */ }
 }
 
@@ -1232,6 +1335,72 @@ function computeTeamLevel(totalXp) {
   }
   return level;
 }
+const SHOP_CATALOG = [
+  { key: "frame_common_blue", type: "frame", name: "قاب آبی", rarity: "common", price: 300 },
+  { key: "frame_common_red", type: "frame", name: "قاب قرمز", rarity: "common", price: 300 },
+  { key: "frame_common_gold", type: "frame", name: "قاب طلایی", rarity: "common", price: 300 },
+  { key: "frame_rare_glow_blue", type: "frame", name: "نئون آبی", rarity: "rare", price: 800 },
+  { key: "frame_rare_glow_purple", type: "frame", name: "نئون بنفش", rarity: "rare", price: 800 },
+  { key: "frame_rare_glow_green", type: "frame", name: "نئون سبز", rarity: "rare", price: 800 },
+  { key: "frame_legend_fire_classic", type: "frame", name: "آتیش کلاسیک", rarity: "legendary", price: 2000 },
+  { key: "frame_legend_fire_blue", type: "frame", name: "آتیش آبی", rarity: "legendary", price: 2000 },
+  { key: "frame_legend_toxic", type: "frame", name: "آتیش سمی", rarity: "legendary", price: 2000 },
+  { key: "frame_legend_electro_purple", type: "frame", name: "الکترو بنفش", rarity: "legendary", price: 2000 },
+  { key: "frame_legend_electro_blue", type: "frame", name: "الکترو آبی", rarity: "legendary", price: 2000 },
+  { key: "frame_legend_frost", type: "frame", name: "یخی", rarity: "legendary", price: 2000 },
+  { key: "frame_legend_galaxy", type: "frame", name: "کهکشانی", rarity: "legendary", price: 2000 },
+  { key: "frame_legend_golden", type: "frame", name: "طلایی افسانه‌ای", rarity: "legendary", price: 2000 },
+  { key: "badge_star_bronze", type: "badge", name: "ستاره‌ی برنزی", rarity: "common", price: 300 },
+  { key: "badge_chevron", type: "badge", name: "شورون سرباز", rarity: "common", price: 300 },
+  { key: "badge_shield", type: "badge", name: "سپر ساده", rarity: "common", price: 300 },
+  { key: "badge_flag", type: "badge", name: "پرچم کوچک", rarity: "common", price: 300 },
+  { key: "badge_bow", type: "badge", name: "نشان تیرانداز", rarity: "common", price: 300 },
+  { key: "badge_hammer", type: "badge", name: "نشان قدرت", rarity: "common", price: 300 },
+  { key: "badge_medal", type: "badge", name: "مدال افتخار", rarity: "rare", price: 800 },
+  { key: "badge_eagle_wings", type: "badge", name: "بال‌های عقاب", rarity: "rare", price: 800 },
+  { key: "badge_crossed_swords", type: "badge", name: "شمشیرهای ضربدری", rarity: "rare", price: 800 },
+  { key: "badge_skull", type: "badge", name: "جمجمه‌ی جنگجو", rarity: "rare", price: 800 },
+  { key: "badge_helmet", type: "badge", name: "کلاه‌خود شوالیه", rarity: "rare", price: 800 },
+  { key: "badge_bow_silver", type: "badge", name: "کمان و تیر نقره‌ای", rarity: "rare", price: 800 },
+  { key: "badge_crown", type: "badge", name: "تاج فرماندهی", rarity: "legendary", price: 2000 },
+  { key: "badge_golden_eagle", type: "badge", name: "عقاب طلایی", rarity: "legendary", price: 2000 },
+  { key: "badge_dragon", type: "badge", name: "اژدهای شعله‌ور", rarity: "legendary", price: 2000 },
+  { key: "badge_galaxy_star", type: "badge", name: "ستاره‌ی کهکشانی", rarity: "legendary", price: 2000 },
+  { key: "badge_electric_sword", type: "badge", name: "شمشیر الکتریکی", rarity: "legendary", price: 2000 },
+  { key: "badge_phoenix", type: "badge", name: "ققنوس", rarity: "legendary", price: 2000 },
+];
+
+const BADGE_ICON_PATHS = {
+  badge_star_bronze: '<polygon points="12,2 14.9,8.5 22,9.3 16.5,14 18.2,21 12,17.3 5.8,21 7.5,14 2,9.3 9.1,8.5" fill="#cd7f32"/>',
+  badge_chevron: '<path d="M4 16 L12 8 L20 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>',
+  badge_shield: '<path d="M12 2 L20 5 V11 C20 16 16.5 20 12 22 C7.5 20 4 16 4 11 V5 Z" fill="currentColor"/>',
+  badge_flag: '<path d="M5 3 V21" stroke="currentColor" stroke-width="2"/><path d="M5 4 H17 L14 8 L17 12 H5 Z" fill="currentColor"/>',
+  badge_bow: '<path d="M6 3 C10 12 10 12 6 21" fill="none" stroke="currentColor" stroke-width="2"/><line x1="6" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2"/><polygon points="19,12 15,9 15,15" fill="currentColor"/>',
+  badge_hammer: '<rect x="3" y="4" width="11" height="6" rx="1" fill="currentColor"/><rect x="7.5" y="10" width="3" height="11" rx="1" fill="currentColor"/>',
+  badge_medal: '<polygon points="9,2 12,9 15,2" fill="#c0c0c0"/><circle cx="12" cy="15" r="6" fill="#c0c0c0"/>',
+  badge_eagle_wings: '<path d="M12 13 C6 9 2 11 1 15 C5 15 9 14 12 13 Z" fill="#93c5fd"/><path d="M12 13 C18 9 22 11 23 15 C19 15 15 14 12 13 Z" fill="#93c5fd"/>',
+  badge_crossed_swords: '<line x1="4" y1="4" x2="20" y2="20" stroke="#93c5fd" stroke-width="2.5" stroke-linecap="round"/><line x1="20" y1="4" x2="4" y2="20" stroke="#93c5fd" stroke-width="2.5" stroke-linecap="round"/>',
+  badge_skull: '<circle cx="12" cy="10" r="7" fill="#93c5fd"/><rect x="8" y="14" width="8" height="6" rx="1" fill="#93c5fd"/><circle cx="9.3" cy="9.5" r="1.4" fill="#0a0a0d"/><circle cx="14.7" cy="9.5" r="1.4" fill="#0a0a0d"/>',
+  badge_helmet: '<path d="M4 15 A8 8 0 0 1 20 15 V17 H4 Z" fill="#93c5fd"/><rect x="4" y="16" width="16" height="2" fill="#93c5fd"/>',
+  badge_bow_silver: '<path d="M6 3 C10 12 10 12 6 21" fill="none" stroke="#c0c0c0" stroke-width="2"/><line x1="6" y1="12" x2="19" y2="12" stroke="#c0c0c0" stroke-width="2"/><polygon points="19,12 15,9 15,15" fill="#c0c0c0"/>',
+  badge_crown: '<path d="M4 19 L4 10 L8 14 L12 5 L16 14 L20 10 L20 19 Z" fill="#ffd700"/>',
+  badge_golden_eagle: '<circle cx="12" cy="9" r="3" fill="#ffd700"/><path d="M12 12 C6 9 2 11 1 15 C5 15 9 14 12 12 Z" fill="#ffd700"/><path d="M12 12 C18 9 22 11 23 15 C19 15 15 14 12 12 Z" fill="#ffd700"/>',
+  badge_dragon: '<path d="M2 18 C6 9 10 14 12 7 C14 14 18 9 22 18" fill="none" stroke="#ff7a1a" stroke-width="2" stroke-linecap="round"/><circle cx="22" cy="17" r="1.6" fill="#ff7a1a"/>',
+  badge_galaxy_star: '<polygon points="12,2 14.9,8.5 22,9.3 16.5,14 18.2,21 12,17.3 5.8,21 7.5,14 2,9.3 9.1,8.5" fill="#a855f7"/><circle cx="4" cy="4" r="1" fill="#e9d5ff"/><circle cx="21" cy="5" r="1.2" fill="#e9d5ff"/><circle cx="20" cy="20" r="1" fill="#e9d5ff"/>',
+  badge_electric_sword: '<line x1="12" y1="2" x2="12" y2="17" stroke="#67e8f9" stroke-width="2.5"/><line x1="8" y1="17" x2="16" y2="17" stroke="#67e8f9" stroke-width="2.5"/><path d="M12 3 L9 10 L13 10 L10 17" fill="none" stroke="#fff" stroke-width="1.3"/>',
+  badge_phoenix: '<ellipse cx="12" cy="14" rx="3" ry="5" fill="#ff8c1a"/><path d="M12 10 C6 8 3 4 2 2 C5 6 9 8 12 10 Z" fill="#ffb347"/><path d="M12 10 C18 8 21 4 22 2 C19 6 15 8 12 10 Z" fill="#ffb347"/>',
+};
+
+function renderBadgeIcon(key, size) {
+  if (!key || !BADGE_ICON_PATHS[key]) return "";
+  const item = SHOP_CATALOG.find((i) => i.key === key);
+  const rarity = item ? item.rarity : "common";
+  const s = size || 16;
+  return `<svg class="name-badge rarity-${rarity}" width="${s}" height="${s}" viewBox="0 0 24 24">${BADGE_ICON_PATHS[key]}</svg>`;
+}
+
+let shopState = { catalog: [], owned: [], equippedFrame: null, equippedBadge: null, coins: 0, tab: "frame" };
+
 function renderTeamFlag(team, size) {
   const pattern = team.logo_pattern || "solid";
   const colors = (team.logo_colors && team.logo_colors.length) ? team.logo_colors : ["#3b82f6"];
@@ -1636,203 +1805,4 @@ function switchTeamLbTab(period) {
   loadTeamLeaderboard(period);
 }
 
-async function loadTeamLeaderboard(period) {
-  const list = document.getElementById("teamLbList");
-  list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">در حال بارگذاری...</div>';
-  try {
-    const res = await callFunction("get-team-leaderboard", { period });
-    const rows = res.leaderboard || [];
-    if (rows.length === 0) {
-      list.innerHTML = `
-        <div class="empty-lb">
-          <div class="empty-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.8"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
-          <div class="empty-title">هنوز یگانی رتبه‌بندی نشده</div>
-          <div class="empty-desc">با کسب XP هفتگی یگانت رو بالا بیار</div>
-        </div>`;
-      return;
-    }
-    list.innerHTML = rows.map(t => `<div class="lb-row ${t.rank === 1 ? "top1" : ""}">
-        <div class="pos">${toFa(t.rank)}</div>
-        ${renderTeamFlag(t, 36)}
-        <div class="info"><div class="uname">${t.name}</div></div>
-        <div class="uscore">${toFa(t.score)}</div>
-      </div>`).join("");
-  } catch (e) {
-    list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">خطا در بارگذاری</div>';
-  }
-}
-
-async function loadPodStatus() {
-  try {
-    const data = await callFunction("get-pod-status", { telegram_id: USER_ID });
-    renderPodSection(data);
-  } catch (e) {
-    document.getElementById("podSection").style.display = "none";
-  }
-}
-
-function renderPodCategoryBreakdown(breakdown) {
-  if (!breakdown || breakdown.length === 0) return "";
-  const rows = breakdown.map(b => {
-    const myText = b.my_member ? `${b.my_member.username} (${toFa(b.my_member.score)})` : "—";
-    const oppText = b.opponent_member ? `${b.opponent_member.username} (${toFa(b.opponent_member.score)})` : "—";
-    const myCls = b.my_member ? "" : "empty";
-    const oppCls = b.opponent_member ? "" : "empty";
-    return `<div class="pod-cat-row">
-      <div class="pod-cat-side ${myCls}">${myText}</div>
-      <div class="pod-cat-label">${TEAM_CATEGORY_LABELS[b.category]}</div>
-      <div class="pod-cat-side ${oppCls}">${oppText}</div>
-    </div>`;
-  }).join("");
-  return `<div class="pod-cat-list">${rows}</div>`;
-}
-function podResultLabel(result) {
-  if (result === "win") return "برد";
-  if (result === "loss") return "باخت";
-  if (result === "tie") return "مساوی";
-  return "-";
-}
-
-function renderPodSection(data) {
-  const section = document.getElementById("podSection");
-  if (!data || !data.in_pod) {
-    section.style.display = "none";
-    return;
-  }
-  section.style.display = "block";
-
-  const todayCard = document.getElementById("podTodayCard");
-  const m = data.today_match;
-  if (!m) {
-    todayCard.innerHTML = `<div class="pod-card"><div class="pod-status-note">امروز مسابقه‌ای برای یگان شما تعریف نشده</div></div>`;
-  } else {
-    const oppTeam = m.opponent_team || { name: "—" };
-    const myScore = m.my_score ?? "—";
-    const oppScore = m.opponent_score ?? "—";
-    let actionHtml = "";
-    if (m.status === "completed") {
-      actionHtml = `<div class="pod-status-note">نتیجه‌ی امروز: ${podResultLabel(m.result)}</div>`;
-    } else if (data.already_played_today) {
-      actionHtml = `<div class="pod-status-note">کوییز پاد امروزت رو زدی، منتظر بمون تا مسابقه تموم بشه</div>`;
-    } else if (!data.my_mission || !data.my_mission.pod_mission_category) {
-      actionHtml = `<div class="pod-status-note">فرمانده هنوز دسته‌ی رقابت پاد برات تعیین نکرده</div>`;
-    } else {
-      actionHtml = `<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="startPodMission()">شروع کوییز پاد</button>`;
-    }
-    todayCard.innerHTML = `
-      <div class="pod-card">
-        <div class="pod-vs-row">
-          <div class="pod-team-block">
-            <div class="pod-team-name">یگان شما</div>
-            <div class="pod-score">${toFa(myScore)}</div>
-          </div>
-          <div class="pod-vs-label">در مقابل</div>
-          <div class="pod-team-block">
-            ${renderTeamFlag(oppTeam, 40)}
-            <div class="pod-team-name">${oppTeam.name}</div>
-            <div class="pod-score">${toFa(oppScore)}</div>
-          </div>
-        </div>
-        ${actionHtml}
-        ${renderPodCategoryBreakdown(m.category_breakdown)}
-      </div>`;
-  }
-
-  const scheduleWrap = document.getElementById("podScheduleWrap");
-  const scheduleEl = document.getElementById("podSchedule");
-  if (data.schedule && data.schedule.length > 0) {
-    scheduleWrap.style.display = "block";
-    scheduleEl.innerHTML = data.schedule.map(s => {
-      const opp = s.opponent_team || { name: "—" };
-      const resultCls = s.result || "";
-      const resultText = s.status === "completed" ? podResultLabel(s.result) : "برنامه‌ریزی‌شده";
-      return `<div class="pod-schedule-row">
-        <div class="psd">${s.match_date}</div>
-        <div class="pso">${renderTeamFlag(opp, 26)}<span>${opp.name}</span></div>
-        <div class="psr ${resultCls}">${resultText}</div>
-      </div>`;
-    }).join("");
-  } else {
-    scheduleWrap.style.display = "none";
-  }
-
-  const standingsWrap = document.getElementById("podStandingsWrap");
-  const standingsEl = document.getElementById("podStandings");
-  if (data.standings && data.standings.length > 0) {
-    standingsWrap.style.display = "block";
-    standingsEl.innerHTML = data.standings.map((s, idx) => {
-      const t = s.team || { name: "—" };
-      return `<div class="pod-standing-row">
-        <div class="psn">${toFa(idx + 1)}</div>
-        ${renderTeamFlag(t, 28)}
-        <div class="pst">${t.name}</div>
-        <div class="pss">${toFa(s.wins)}ب ${toFa(s.ties)}م ${toFa(s.losses)}ش</div>
-      </div>`;
-    }).join("");
-  } else {
-    standingsWrap.style.display = "none";
-  }
-}
-
-async function startPodMission() {
-  showScreen("loading");
-  document.getElementById("bottomNav").classList.remove("visible");
-  currentSessionType = "pod_mission";
-  try {
-    const res = await callFunction("start-pod-mission", { telegram_id: USER_ID });
-    if (res.error) {
-      if (tg) tg.showAlert(res.error); else alert(res.error);
-      navTo("team");
-      return;
-    }
-    if (!res.allowed) {
-      document.getElementById("cdDesc").textContent = "تا کوییز پاد بعدی";
-      startCooldownDisplay(res.remaining_seconds || 0, 24 * 3600);
-      document.getElementById("skipCooldownBtn").style.display = "none";
-      showScreen("cooldown");
-      return;
-    }
-    currentSession = res.session_id;
-    currentQuestions = res.questions;
-    currentQIndex = 0;
-    showQuestion();
-    showScreen("quiz");
-  } catch (e) {
-    showScreen("error");
-  }
-}
-
-async function assignPodMission(memberTelegramId, category) {
-  try {
-    await callFunction("assign-pod-mission", {
-      commander_telegram_id: USER_ID,
-      member_telegram_id: memberTelegramId,
-      pod_mission_category: category || null,
-    });
-    await loadTeamScreen();
-  } catch (e) { /* silent */ }
-}
-
-function onPodMissionSelectChange(selectEl, memberTelegramId) {
-  const newValue = selectEl.value;
-  const label = newValue ? (TEAM_CATEGORY_LABELS[newValue] || newValue) : "بدون دسته‌ی پاد";
-  const previousValue = selectEl.getAttribute("data-prev") || "";
-  const doIt = async () => {
-    await assignPodMission(memberTelegramId, newValue);
-    selectEl.setAttribute("data-prev", newValue);
-  };
-  const revert = () => { selectEl.value = previousValue; };
-  const msg = `مطمئنی می‌خوای دسته‌ی رقابت پاد این عضو رو به «${label}» تغییر بدی؟`;
-  if (tg) {
-    tg.showConfirm(msg, async (ok) => { if (ok) await doIt(); else revert(); });
-  } else if (confirm(msg)) {
-    doIt();
-  } else {
-    revert();
-  }
-}
-
-init();
-</script>
-</body>
-  </html>
+asyn
