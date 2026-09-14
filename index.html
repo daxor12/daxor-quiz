@@ -250,6 +250,8 @@
   .top-row { display:flex; justify-content:space-between; align-items:center; }
   .iconbtn { width:34px; height:34px; border-radius:11px; background: rgba(255,255,255,0.045); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; cursor:pointer; transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
   .iconbtn:active { transform: scale(0.9); background: rgba(255,255,255,0.09); }
+  .shop-entry-btn { display:flex; align-items:center; gap:6px; height:34px; padding:0 13px; border-radius:11px; background: rgba(255,178,45,0.12); border:1px solid rgba(255,178,45,0.3); color:#ffb22d; font-family:inherit; font-size:11px; font-weight:800; cursor:pointer; transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
+  .shop-entry-btn:active { transform: scale(0.94); background: rgba(255,178,45,0.18); }
   .hero { display:flex; align-items:center; gap:16px; margin-top:16px; }
   .p-avatar { width:80px; height:80px; border-radius:24px; overflow:hidden; box-shadow: 0 0 0 2.5px rgba(224,38,43,0.5), var(--shadow-2); flex-shrink:0; }
   .p-avatar img { width:100%; height:100%; object-fit:cover; }
@@ -272,7 +274,8 @@
   .pid-topline { display:flex; justify-content:space-between; align-items:flex-start; position:relative; z-index:1; }
   .pid-brand { font-size:11px; font-weight:800; letter-spacing:2.5px; color:var(--text); }
   .pid-brand small { display:block; font-size:8px; font-weight:700; letter-spacing:1.8px; color:var(--accent-soft); margin-top:3px; }
-  .pid-credits { display:inline-flex; align-items:center; gap:5px; background:rgba(255,178,45,0.09); border:1px solid rgba(255,178,45,0.25); padding:4px 9px; border-radius:8px; font-size:10px; font-weight:800; color:#ffb22d; flex-shrink:0; }
+  .pid-credits { display:inline-flex; align-items:center; gap:5px; background:rgba(255,178,45,0.09); border:1px solid rgba(255,178,45,0.25); padding:4px 9px; border-radius:8px; font-size:10px; font-weight:800; color:#ffb22d; flex-shrink:0; cursor:pointer; transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
+  .pid-credits:active { transform: scale(0.94); background:rgba(255,178,45,0.16); }
   .pid-hr { height:1px; margin:14px 0; position:relative; z-index:1; background: repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0 5px, transparent 5px 9px); }
   .pid-body { display:flex; align-items:center; gap:14px; position:relative; z-index:1; }
   .pid-identity { flex:1; min-width:0; }
@@ -450,13 +453,25 @@
 
   /* ===== صفحه‌ی فروشگاه ===== */
   .shop-tabs { display:flex; gap:8px; margin-bottom:14px; }
-  .shop-coin-bar { display:flex; align-items:center; justify-content:center; gap:8px; background: rgba(255,178,45,0.09); border:1px solid rgba(255,178,45,0.28); border-radius:16px; padding:10px; margin-bottom:14px; font-size:13px; font-weight:800; color:#ffb22d; }
+  .shop-coin-bar { display:flex; align-items:center; justify-content:center; gap:8px; background: rgba(255,178,45,0.09); border:1px solid rgba(255,178,45,0.28); border-radius:16px; padding:11px; margin-bottom:14px; font-size:13px; font-weight:800; color:#ffb22d; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
   .shop-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-  .shop-item-card { border-radius:18px; padding:14px 10px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; background: var(--surface); border:1px solid var(--border); transition: transform var(--dur-fast) var(--ease); }
+  .shop-item-card { position:relative; overflow:hidden; border-radius:18px; padding:14px 10px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; background: var(--surface); border:1px solid var(--border); transition: transform var(--dur-fast) var(--ease); }
   .shop-item-card:active { transform: scale(0.97); }
   .shop-item-card.rarity-common { border-color: rgba(154,163,178,0.28); }
   .shop-item-card.rarity-rare { border-color: rgba(94,170,255,0.38); background: rgba(94,170,255,0.045); }
   .shop-item-card.rarity-legendary { border-color: rgba(255,215,0,0.45); background: rgba(255,215,0,0.05); }
+  .shop-item-card.rarity-legendary::before {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background: linear-gradient(115deg, transparent 40%, rgba(255,215,0,0.14) 50%, transparent 60%);
+    background-size: 200% 200%;
+    animation: legendShimmer 3.5s ease-in-out infinite;
+  }
+  @keyframes legendShimmer { 0% { background-position: 200% 0; } 100% { background-position: -60% 0; } }
+  .shop-item-card.is-equipped { border-color: rgba(34,197,94,0.45); }
+  .shop-rarity-tag { position:absolute; top:8px; right:8px; font-size:8px; font-weight:800; letter-spacing:0.2px; padding:2.5px 6px; border-radius:5px; z-index:1; }
+  .shop-rarity-tag.rare { background: rgba(94,170,255,0.18); color:#5eaaff; }
+  .shop-rarity-tag.legendary { background: rgba(255,215,0,0.2); color:#ffd700; }
+  .shop-equipped-tag { position:absolute; top:8px; left:8px; font-size:8px; font-weight:800; background: rgba(34,197,94,0.2); color:#22c55e; padding:2.5px 6px; border-radius:5px; z-index:1; display:flex; align-items:center; gap:2px; }
   .shop-item-preview { width:56px; height:56px; border-radius:18px; background: linear-gradient(145deg,var(--surface-3),var(--surface)); display:flex; align-items:center; justify-content:center; }
   .shop-item-name { font-size:11px; font-weight:700; }
   .shop-item-price { font-size:10.5px; color:#ffb22d; font-weight:700; }
@@ -675,20 +690,24 @@
   <div class="screen" id="screen-profile">
     <div class="top-row">
       <div class="page-title">پروفایل</div>
-      <div class="iconbtn" onclick="showScreen('shop'); loadShop();" style="margin-left:8px">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffb22d" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-      </div>
-      <div class="iconbtn" onclick="showScreen('settings')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <div style="display:flex; gap:8px; align-items:center; margin-left:8px">
+        <button class="shop-entry-btn" onclick="showScreen('shop'); loadShop();">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffb22d" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span>فروشگاه</span>
+        </button>
+        <div class="iconbtn" onclick="showScreen('settings')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
       </div>
     </div>
 
     <div class="pid-card">
       <div class="pid-topline">
         <div class="pid-brand">DAXOR <small>PERSONNEL ID</small></div>
-        <div class="pid-credits">
+        <div class="pid-credits" onclick="showScreen('shop'); loadShop();">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9 10h6"/></svg>
           <span id="profCoins">۰ سکه</span>
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="opacity:0.55"><path d="m9 18 6-6-6-6"/></svg>
         </div>
       </div>
       <div class="pid-hr"></div>
@@ -2303,11 +2322,15 @@ function renderShopGrid() {
     if (!owned) {
       btnHtml = `<button class="shop-item-btn buy" onclick="buyShopItemFn('${item.key}')">خرید (${toFa(item.price)})</button>`;
     } else if (isEquipped) {
-      btnHtml = `<button class="shop-item-btn equipped" onclick="equipShopItemFn('${item.type}', null)">برداشتن</button>`;
+      btnHtml = `<button class="shop-item-btn equipped" onclick="equipShopItemFn('${item.type}', null)">درآوردن</button>`;
     } else {
       btnHtml = `<button class="shop-item-btn equip" onclick="equipShopItemFn('${item.type}', '${item.key}')">پوشیدن</button>`;
     }
-    return `<div class="shop-item-card rarity-${item.rarity}">
+    const rarityTag = item.rarity === "legendary" ? `<div class="shop-rarity-tag legendary">افسانه‌ای</div>`
+      : item.rarity === "rare" ? `<div class="shop-rarity-tag rare">کمیاب</div>` : "";
+    const equippedTag = isEquipped ? `<div class="shop-equipped-tag">✓ تجهیز‌شده</div>` : "";
+    return `<div class="shop-item-card rarity-${item.rarity}${isEquipped ? " is-equipped" : ""}">
+      ${rarityTag}${equippedTag}
       <div class="shop-item-preview">${preview}</div>
       <div class="shop-item-name">${item.name}</div>
       ${!owned ? `<div class="shop-item-price">${toFa(item.price)} سکه</div>` : ""}
