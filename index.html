@@ -119,14 +119,25 @@
   .greet-text .hi { font-size:11.5px; color:var(--text-dim); font-weight:500; }
   .greet-text .name { font-size:16px; font-weight:800; margin-top:1px; letter-spacing:-0.2px; }
   .rank-card {
-    margin-top:var(--sp-4); border-radius:20px; padding:20px; position:relative; overflow:hidden;
+    margin-top:var(--sp-4); padding:20px; position:relative; overflow:hidden;
     background: linear-gradient(160deg, var(--surface-2) 0%, var(--surface) 100%);
     border:1px solid var(--border); box-shadow: var(--shadow-2);
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
   }
   .rank-card::before {
     content:""; position:absolute; inset:0 0 auto 0; height:2px;
     background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
     opacity:0.7;
+  }
+  .rank-card::after, .pid-card::after {
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:0.6;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M20 20 L180 180 M180 20 L20 180' stroke='%23e0262b' stroke-width='14' stroke-linecap='round' opacity='0.1'/%3E%3C/svg%3E"),
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 240px 240px, 22px 22px, 22px 22px;
+    background-position: 115% -15%, 0 0, 0 0;
+    background-repeat: no-repeat, repeat, repeat;
   }
   .rank-texture { position:absolute; inset:0; opacity:0.08; color:var(--accent-soft); pointer-events:none; }
   .rank-texture svg { position:absolute; width:150px; height:150px; top:50%; left:-30px; transform:translateY(-50%); }
@@ -246,11 +257,6 @@
     clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
   }
   .pid-card::before { content:""; position:absolute; inset:0 0 auto 0; height:2px; background: linear-gradient(90deg, transparent, var(--accent-bright), transparent); opacity:0.7; }
-  .pid-card::after {
-    content:""; position:absolute; inset:0; pointer-events:none; opacity:0.5;
-    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-    background-size: 22px 22px;
-  }
   .pid-topline { display:flex; justify-content:space-between; align-items:flex-start; position:relative; z-index:1; }
   .pid-brand { font-size:11px; font-weight:800; letter-spacing:2.5px; color:var(--text); }
   .pid-brand small { display:block; font-size:8px; font-weight:700; letter-spacing:1.8px; color:var(--accent-soft); margin-top:3px; }
@@ -270,7 +276,7 @@
   .stat-box .v { font-size:15px; font-weight:800; }
   .stat-box .l { font-size:9px; color:var(--text-dim); margin-top:3px; }
   .action-card { margin-top:14px; border-radius:20px; padding:16px; position:relative; overflow:hidden; background: var(--surface); border:1px solid var(--border); }
-  .action-card.invite { background: linear-gradient(160deg, var(--surface-2) 0%, var(--surface) 100%); border:1px solid rgba(var(--accent-rgb),0.25); }
+  .action-card.invite { background: linear-gradient(160deg, var(--surface-2) 0%, var(--surface) 100%); border:1px solid rgba(var(--accent-rgb),0.25); clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); border-radius:0; }
   .action-card.invite::before { content:""; position:absolute; inset:0 0 auto 0; height:2px; background: linear-gradient(90deg, transparent, var(--accent-bright), transparent); opacity:0.65; }
   .ac-head { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; position:relative; z-index:1; }
   .ac-desc { font-size:10.5px; color:var(--text-dim); margin-top:5px; line-height:1.7; position:relative; z-index:1; }
@@ -330,9 +336,10 @@
   .team-search-row .tn{font-size:12.5px; font-weight:700;}
   .team-search-row .tm{font-size:10px; color:var(--text-dim); margin-top:2px;}
   .team-header-card{
-    margin-top:16px; border-radius:22px; padding:20px; position:relative; overflow:hidden;
+    margin-top:16px; padding:20px; position:relative; overflow:hidden;
     background: linear-gradient(160deg, var(--surface-2) 0%, var(--surface) 100%);
     border:1px solid var(--border);
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
   }
   .team-header-card::before { content:""; position:absolute; inset:0 0 auto 0; height:2px; background: linear-gradient(90deg, transparent, var(--accent-bright), transparent); opacity:0.65; }
   .team-name-lg{font-size:19.5px; font-weight:800; letter-spacing:-0.2px; position:relative; z-index:1;}
@@ -480,8 +487,8 @@
   .member-row .minfo{flex:1; min-width:0;}
   .member-row .mname{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
   .member-row .msub{font-size:10px; color:var(--text-dim); margin-top:3px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
-  .cmdr-badge{font-size:8.5px; background: rgba(255,178,45,0.16); color:#ffb22d; border:1px solid rgba(255,178,45,0.32); padding:2.5px 7px; border-radius:9px; font-weight:700; letter-spacing:0.2px;}
-  .reserve-badge{font-size:8.5px; background: rgba(255,255,255,0.055); color:var(--text-dim); border:1px solid rgba(255,255,255,0.1); padding:2.5px 7px; border-radius:9px; font-weight:700; letter-spacing:0.2px;}
+  .cmdr-badge{font-size:8.5px; background: rgba(255,178,45,0.16); color:#ffb22d; border:1px solid rgba(255,178,45,0.32); border-right:2px solid #ffb22d; padding:2.5px 7px; border-radius:4px; font-weight:700; letter-spacing:0.4px;}
+  .reserve-badge{font-size:8.5px; background: rgba(255,255,255,0.055); color:var(--text-dim); border:1px solid rgba(255,255,255,0.1); border-right:2px solid rgba(255,255,255,0.25); padding:2.5px 7px; border-radius:4px; font-weight:700; letter-spacing:0.4px;}
   .mission-select{background: rgba(255,255,255,0.045); border:1px solid rgba(255,255,255,0.1); border-radius:11px; color:var(--text); font-family:inherit; font-size:10.5px; padding:6px 8px;}
   .member-controls{display:flex; flex-direction:column; align-items:flex-end; gap:6px;}
   .remove-member-btn{width:26px; height:26px; border-radius:10px; background: rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.28); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition: transform var(--dur-fast) var(--ease);}
