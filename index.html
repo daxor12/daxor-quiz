@@ -1572,9 +1572,11 @@ function switchTeamTab(tab) {
 async function loadTeamScreen() {
   document.getElementById("teamNoTeamView").style.display = "none";
   document.getElementById("teamDashboardView").style.display = "none";
-  await loadEquippedCosmetics();
   try {
-    const res = await callFunction("get-my-team", { telegram_id: USER_ID });
+    const [, res] = await Promise.all([
+      loadEquippedCosmetics(),
+      callFunction("get-my-team", { telegram_id: USER_ID }),
+    ]);
     if (res.team) {
       myTeamData = res;
       renderTeamDashboard(res);
