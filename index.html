@@ -39,6 +39,8 @@
     --shadow-3: 0 20px 48px rgba(0,0,0,0.45);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body, #app { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  input, textarea { -webkit-user-select:text; user-select:text; -webkit-touch-callout:default; }
   html, body { height: 100%; }
   body {
     font-family: "Vazirmatn", sans-serif;
@@ -159,12 +161,20 @@
   .quiz-header { display:flex; justify-content:space-between; align-items:center; }
   .qnum { font-size:12px; color:var(--text-dim); font-weight:600; }
   .qcat { font-size:10.5px; background: rgba(var(--accent-rgb),0.14); border:1px solid rgba(var(--accent-rgb),0.32); padding:5px 12px; border-radius:20px; color:var(--accent-soft); font-weight:700; }
+  .quiz-progress-track { margin-top:12px; height:4px; background: rgba(255,255,255,0.06); border-radius:10px; overflow:hidden; }
+  .quiz-progress-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); transition: width var(--dur-med) var(--ease); }
   .timer-wrap { display:flex; justify-content:center; margin:26px 0 20px; }
   .timer-ring { position:relative; width:110px; height:110px; }
   .timer-ring svg { transform: rotate(-90deg); }
   .timer-ring .bg { stroke:#191919; }
-  .timer-ring .fg { stroke:var(--accent-bright); stroke-linecap:round; transition: stroke-dashoffset 1s linear; }
-  .timer-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .timer-ring .fg { stroke:var(--accent-bright); stroke-linecap:round; transition: stroke-dashoffset 1s linear, stroke var(--dur-med) var(--ease); }
+  .timer-ring.state-good .fg { stroke:#22c55e; }
+  .timer-ring.state-warn .fg { stroke:#ffb22d; }
+  .timer-ring.state-danger .fg { stroke:var(--accent-bright); }
+  .timer-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; transition: color var(--dur-med) var(--ease); }
+  .timer-ring.state-good .timer-num { color:#22c55e; }
+  .timer-ring.state-warn .timer-num { color:#ffb22d; }
+  .timer-ring.state-danger .timer-num { color:var(--accent-bright); }
   .q-text { text-align:center; font-size:15.5px; font-weight:600; line-height:1.9; padding:0 8px; }
   .options { margin-top:22px; display:flex; flex-direction:column; gap:10px; }
   .opt {
@@ -183,6 +193,8 @@
   @keyframes optShake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);} }
 
   .res-badge { width:84px; height:84px; margin:8px auto 0; border-radius:50%; background: linear-gradient(150deg, #ffc94d, #c47800); display:flex; align-items:center; justify-content:center; box-shadow:0 0 40px rgba(255,178,45,0.32), var(--shadow-2); animation: resBadgeIn var(--dur-slow) var(--ease-spring); }
+  .res-badge.tier-elite { background: linear-gradient(150deg, #4ade80, #15803d); box-shadow:0 0 40px rgba(74,222,128,0.32), var(--shadow-2); }
+  .res-badge.tier-weak { background: linear-gradient(150deg, #9aa3b2, #4b5563); box-shadow:0 0 30px rgba(154,163,178,0.22), var(--shadow-2); }
   @keyframes resBadgeIn { from{opacity:0; transform:scale(0.6) rotate(-15deg);} to{opacity:1; transform:scale(1) rotate(0);} }
   .res-title { text-align:center; font-size:18.5px; font-weight:800; margin-top:16px; letter-spacing:-0.2px; }
   .res-sub { text-align:center; font-size:11.5px; color:var(--text-dim); margin-top:5px; }
@@ -266,6 +278,7 @@
   .pid-identity { flex:1; min-width:0; }
   .pid-rank-line { display:flex; align-items:center; gap:8px; margin-top:7px; flex-wrap:wrap; }
   .pid-id-line { font-size:10px; color:var(--text-faint); letter-spacing:0.4px; margin-top:7px; font-variant-numeric:tabular-nums; direction:ltr; text-align:right; font-weight:600; }
+  .pid-unit-line { font-size:10.5px; color:var(--accent-soft); letter-spacing:0.2px; margin-top:6px; font-weight:700; }
   .pid-xp-row { display:flex; justify-content:space-between; align-items:baseline; position:relative; z-index:1; margin-bottom:10px; }
   .pid-level-badge { font-size:16px; font-weight:900; letter-spacing:-0.2px; font-variant-numeric:tabular-nums; }
   .pid-xp-value { font-size:11px; font-weight:800; color:var(--accent-soft); font-variant-numeric:tabular-nums; }
@@ -591,6 +604,7 @@
       <div class="qnum" id="quizProgress">سوال ۱ از ۱۰</div>
       <div class="qcat" id="quizCategory">عمومی</div>
     </div>
+    <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quizProgressFill" style="width:0%"></div></div>
     <div class="timer-wrap">
       <div class="timer-ring">
         <svg width="110" height="110">
@@ -606,10 +620,10 @@
 
   <!-- 6. RESULT -->
   <div class="screen" id="screen-result">
-    <div class="res-badge">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1a1200" stroke-width="2"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg>
+    <div class="res-badge" id="resBadge">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1a1200" stroke-width="2" id="resBadgeIcon"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg>
     </div>
-    <div class="res-title">عملیات با موفقیت تکمیل شد</div>
+    <div class="res-title" id="resTitle">عملیات با موفقیت تکمیل شد</div>
     <div class="res-sub" id="resSub">۰ از ۱۰ پاسخ صحیح</div>
     <div class="res-score" id="resScore">۰</div>
     <div class="res-score-label">امتیاز کسب‌شده</div>
@@ -690,6 +704,7 @@
           <div class="pid-rank-line">
             <div class="p-rank-chip" style="margin-top:0"><img id="profRankImg" src="assets/ranks/rank-1.png" alt=""><span id="profRankName">سرباز صفر</span></div>
           </div>
+          <div class="pid-unit-line" id="profUnitLine" style="display:none">یگان: <span id="profUnitName"></span></div>
           <div class="pid-id-line">ID <span id="profIdNum">—</span></div>
         </div>
       </div>
@@ -760,10 +775,23 @@
     <div id="pubError" class="pub-error" style="display:none">اطلاعات این بازیکن در دسترس نیست</div>
 
     <div id="pubContent" class="fade-in" style="display:none">
-      <div class="pub-hero">
-        <div class="pub-avatar" id="pubAvatarWrap"><div id="pubAvatar" class="avatar-bg" style="background-image:url('assets/avatars/avatar-3.png')"></div></div>
-        <div class="pub-name"><span id="pubNameText">کاربر</span> <span id="pubNameBadge" style="display:inline-flex;vertical-align:middle"></span></div>
-        <div class="pub-rank-chip"><img id="pubRankImg" src="assets/ranks/rank-1.png" alt=""><span id="pubRankName">سرباز صفر</span></div>
+      <div class="pid-card">
+        <div class="pid-topline">
+          <div class="pid-brand">DAXOR <small>PERSONNEL ID</small></div>
+        </div>
+        <div class="pid-hr"></div>
+        <div class="pid-body">
+          <div class="p-avatar" id="pubAvatarWrap"><div id="pubAvatar" class="avatar-bg" style="background-image:url('assets/avatars/avatar-3.png')"></div></div>
+          <div class="pid-identity">
+            <div class="p-name"><span id="pubNameText">کاربر</span> <span id="pubNameBadge" style="display:inline-flex;vertical-align:middle"></span></div>
+            <div class="pid-rank-line">
+              <div class="p-rank-chip" style="margin-top:0"><img id="pubRankImg" src="assets/ranks/rank-1.png" alt=""><span id="pubRankName">سرباز صفر</span></div>
+            </div>
+            <div class="pid-unit-line" id="pubUnitLine" style="display:none">یگان: <span id="pubUnitName"></span></div>
+          </div>
+        </div>
+        <div class="pid-hr"></div>
+        <div class="pid-footer">DAXOR // 2026</div>
       </div>
 
       <div class="pub-stats-grid">
@@ -821,7 +849,11 @@
   <div class="screen" id="screen-team">
     <div class="page-title" style="margin-bottom:14px">یگان</div>
 
-    <div id="teamNoTeamView">
+    <div id="teamLoadingView" class="center-flex" style="flex:1">
+      <div class="spinner"></div>
+    </div>
+
+    <div id="teamNoTeamView" style="display:none">
       <div class="lb-tabs">
         <div class="lb-tab active" data-teamtab="create" onclick="switchTeamTab('create')">ساخت یگان</div>
         <div class="lb-tab" data-teamtab="join" onclick="switchTeamTab('join')">پیوستن به یگان</div>
@@ -1171,6 +1203,7 @@ function showQuestion() {
   document.getElementById("quizProgress").textContent = `سوال ${toFa(currentQIndex + 1)} از ${toFa(currentQuestions.length)}`;
   document.getElementById("quizCategory").textContent = q.category || "عمومی";
   document.getElementById("quizQuestionText").textContent = q.question_text;
+  document.getElementById("quizProgressFill").style.width = `${((currentQIndex + 1) / currentQuestions.length) * 100}%`;
 
   const optsWrap = document.getElementById("quizOptions");
   optsWrap.innerHTML = "";
@@ -1188,17 +1221,26 @@ function showQuestion() {
   startQuestionTimer();
 }
 
+function timerState(remaining) {
+  if (remaining <= 5) return "state-danger";
+  if (remaining <= 10) return "state-warn";
+  return "state-good";
+}
+
 function startQuestionTimer() {
   clearInterval(timerInterval);
   let remaining = QUESTION_SECONDS;
+  const ringWrap = document.querySelector(".timer-ring");
   const ring = document.getElementById("quizRing");
   const circumference = 301;
   document.getElementById("quizTimerNum").textContent = toFa(remaining);
   ring.style.strokeDashoffset = 0;
+  ringWrap.className = `timer-ring ${timerState(remaining)}`;
   timerInterval = setInterval(() => {
     remaining--;
     document.getElementById("quizTimerNum").textContent = toFa(Math.max(remaining, 0));
     ring.style.strokeDashoffset = circumference * (1 - remaining / QUESTION_SECONDS);
+    ringWrap.className = `timer-ring ${timerState(Math.max(remaining, 0))}`;
     if (remaining <= 0) { clearInterval(timerInterval); selectAnswer(-1); }
   }, 1000);
 }
@@ -1236,13 +1278,41 @@ async function finishGame() {
   showScreen("loading");
   try {
     const res = await callFunction("finish-session", { session_id: currentSession });
-    document.getElementById("resScore").textContent = toFa(res.score || 0);
-    document.getElementById("resSub").textContent = `${toFa(res.correct_count || 0)} از ${toFa(res.total_answered || 0)} پاسخ صحیح`;
-    document.getElementById("resCorrect").textContent = toFa(res.correct_count || 0);
+    const correct = res.correct_count || 0;
+    const total = res.total_answered || 0;
+    const pct = total > 0 ? (correct / total) * 100 : 0;
+
+    const badge = document.getElementById("resBadge");
+    badge.classList.remove("tier-elite", "tier-weak");
+    const titleEl = document.getElementById("resTitle");
+    if (pct >= 80) {
+      badge.classList.add("tier-elite");
+      titleEl.textContent = "عملکرد عالی";
+    } else if (pct < 50) {
+      badge.classList.add("tier-weak");
+      titleEl.textContent = "نیاز به تمرین بیشتر";
+    } else {
+      titleEl.textContent = "عملیات با موفقیت تکمیل شد";
+    }
+
+    document.getElementById("resSub").textContent = `${toFa(correct)} از ${toFa(total)} پاسخ صحیح`;
+    document.getElementById("resCorrect").textContent = toFa(correct);
     document.getElementById("resWrong").textContent = toFa(res.wrong_count || 0);
-    document.getElementById("resTotal").textContent = toFa(res.total_answered || 0);
+    document.getElementById("resTotal").textContent = toFa(total);
     showScreen("result");
+    animateCountUp(document.getElementById("resScore"), res.score || 0, 700);
   } catch (e) { showScreen("error"); }
+}
+
+function animateCountUp(el, target, duration) {
+  const start = performance.now();
+  function tick(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = toFa(Math.round(target * eased));
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
 
 const ADS_ENABLED = false;
@@ -1304,7 +1374,7 @@ async function loadLeaderboard(period) {
       return `<div class="lb-row ${cls}" onclick="openPublicProfile(${r.telegram_id})">
         <div class="pos">${toFa(r.rank)}</div>
         <div class="av${selfFrameClass}"><div class="avatar-bg" style="background-image:url('${avImg}')"></div></div>
-        <div class="info"><div class="uname">${isSelf ? "شما" : escapeHtml(r.username)} ${selfBadgeHtml}</div></div>
+        <div class="info"><div class="uname">${escapeHtml(r.username)} ${selfBadgeHtml}</div></div>
         <div class="uscore">${toFa(r.score)}</div>
       </div>`;
     }).join("");
@@ -1334,6 +1404,17 @@ async function loadProfileScreen() {
     renderCategoryStats("profCatStats", profile.category_stats);
     await loadEquippedCosmetics();
   } catch (e) { /* مقادیر پیش‌فرض می‌مونه */ }
+
+  try {
+    const teamRes = await callFunction("get-my-team", { telegram_id: USER_ID });
+    const unitLine = document.getElementById("profUnitLine");
+    if (teamRes && teamRes.team && teamRes.team.name) {
+      document.getElementById("profUnitName").textContent = teamRes.team.name;
+      unitLine.style.display = "block";
+    } else {
+      unitLine.style.display = "none";
+    }
+  } catch (e) { document.getElementById("profUnitLine").style.display = "none"; }
 }
 
 function copyInviteLink() {
@@ -1419,6 +1500,14 @@ async function openPublicProfile(telegramId) {
     document.getElementById("pubRankNameStat").textContent = p.current_rank || "سرباز صفر";
     document.getElementById("pubScore").textContent = toFa(p.total_score || 0);
     document.getElementById("pubGames").textContent = toFa(p.games_played || 0);
+
+    const unitLine = document.getElementById("pubUnitLine");
+    if (p.team_name) {
+      document.getElementById("pubUnitName").textContent = p.team_name;
+      unitLine.style.display = "block";
+    } else {
+      unitLine.style.display = "none";
+    }
 
     const stats = p.category_stats || [];
     renderCategoryStats("pubCatStats", stats);
@@ -1572,11 +1661,13 @@ function switchTeamTab(tab) {
 async function loadTeamScreen() {
   document.getElementById("teamNoTeamView").style.display = "none";
   document.getElementById("teamDashboardView").style.display = "none";
+  document.getElementById("teamLoadingView").style.display = "flex";
   try {
     const [, res] = await Promise.all([
       loadEquippedCosmetics(),
       callFunction("get-my-team", { telegram_id: USER_ID }),
     ]);
+    document.getElementById("teamLoadingView").style.display = "none";
     if (res.team) {
       myTeamData = res;
       renderTeamDashboard(res);
@@ -1586,6 +1677,7 @@ async function loadTeamScreen() {
       document.getElementById("teamNoTeamView").style.display = "block";
     }
   } catch (e) {
+    document.getElementById("teamLoadingView").style.display = "none";
     document.getElementById("teamNoTeamView").style.display = "block";
   }
 }
@@ -2054,7 +2146,8 @@ function renderPodSection(data) {
       <div class="pod-card">
         <div class="pod-vs-row">
           <div class="pod-team-block">
-            <div class="pod-team-name">یگان شما</div>
+            ${renderTeamFlag(myTeamData?.team || {}, 40)}
+            <div class="pod-team-name">${escapeHtml(myTeamData?.team?.name || "یگان شما")}</div>
             <div class="pod-score">${toFa(myScore)}</div>
           </div>
           <div class="pod-vs-label">در مقابل</div>
