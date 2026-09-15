@@ -317,10 +317,14 @@
   }
   .edit-pencil:active { transform: scale(0.88); }
   .av-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-top:18px; }
-  .av-cell { aspect-ratio:1; border-radius:18px; overflow:hidden; border:2px solid transparent; cursor:pointer; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .av-cell { position:relative; aspect-ratio:1; border-radius:18px; overflow:hidden; border:2px solid transparent; cursor:pointer; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   .av-cell:active { transform: scale(0.94); }
   .av-cell.selected { border-color:var(--accent-bright); box-shadow:0 0 14px rgba(224,38,43,0.4); }
   .av-cell img { width:100%; height:100%; object-fit:cover; }
+  .av-check { position:absolute; top:5px; left:5px; width:20px; height:20px; border-radius:50%; background:var(--accent-bright); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; box-shadow:0 2px 6px rgba(0,0,0,0.4); }
+  .av-cell.locked { opacity:0.55; }
+  .av-cell.locked:active { transform: scale(0.96); }
+  .av-lock-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.55); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; color:#fff; font-size:10px; font-weight:800; }
 
   .settings-group { margin-top:16px; }
   .settings-group-title { font-size:10.5px; color:var(--text-faint); letter-spacing:1.5px; margin-bottom:8px; padding:0 4px; font-weight:700; }
@@ -866,6 +870,7 @@
     <div class="shop-tabs">
       <div class="lb-tab active" data-shoptab="frame" onclick="switchShopTab('frame')">قاب‌ها</div>
       <div class="lb-tab" data-shoptab="badge" onclick="switchShopTab('badge')">نشان‌ها</div>
+      <div class="lb-tab" data-shoptab="avatar" onclick="switchShopTab('avatar')">آواتارها</div>
     </div>
 
     <div id="shopGrid" class="shop-grid"></div>
@@ -1472,8 +1477,15 @@ function buildAvatarGrid() {
   const grid = document.getElementById("avGrid");
   let html = "";
   for (let i = 1; i <= AVATAR_COUNT; i++) {
+    const key = `avatar_${i}`;
+    const item = SHOP_CATALOG.find(x => x.key === key);
+    const owned = shopState.owned.includes(key) || !item;
     const sel = i === currentAvatarIndex ? " selected" : "";
-    html += `<div class="av-cell${sel}" onclick="selectAvatar(${i})"><div class="avatar-bg" style="background-image:url('${avatarPath(i)}')"></div></div>`;
+    if (owned) {
+      html += `<div class="av-cell${sel}" onclick="selectAvatar(${i})"><div class="avatar-bg" style="background-image:url('${avatarPath(i)}')"></div>${i === currentAvatarIndex ? '<div class="av-check">✓</div>' : ""}</div>`;
+    } else {
+      html += `<div class="av-cell locked" onclick="showScreen('shop'); loadShop(); switchShopTab('avatar');"><div class="avatar-bg" style="background-image:url('${avatarPath(i)}')"></div><div class="av-lock-overlay"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>${toFa(item.price)}</span></div></div>`;
+    }
   }
   grid.innerHTML = html;
 }
@@ -1633,6 +1645,26 @@ const SHOP_CATALOG = [
   { key: "badge_galaxy_star", type: "badge", name: "ستاره‌ی کهکشانی", rarity: "legendary", price: 2000 },
   { key: "badge_electric_sword", type: "badge", name: "شمشیر الکتریکی", rarity: "legendary", price: 2000 },
   { key: "badge_phoenix", type: "badge", name: "ققنوس", rarity: "legendary", price: 2000 },
+  { key: "avatar_1", type: "avatar", name: "آواتار ۱", rarity: "common", price: 500 },
+  { key: "avatar_2", type: "avatar", name: "آواتار ۲", rarity: "common", price: 500 },
+  { key: "avatar_3", type: "avatar", name: "آواتار ۳", rarity: "common", price: 500 },
+  { key: "avatar_4", type: "avatar", name: "آواتار ۴", rarity: "common", price: 500 },
+  { key: "avatar_5", type: "avatar", name: "آواتار ۵", rarity: "common", price: 500 },
+  { key: "avatar_6", type: "avatar", name: "آواتار ۶", rarity: "common", price: 500 },
+  { key: "avatar_7", type: "avatar", name: "آواتار ۷", rarity: "common", price: 500 },
+  { key: "avatar_8", type: "avatar", name: "آواتار ۸", rarity: "common", price: 500 },
+  { key: "avatar_9", type: "avatar", name: "آواتار ۹", rarity: "common", price: 500 },
+  { key: "avatar_10", type: "avatar", name: "آواتار ۱۰", rarity: "common", price: 500 },
+  { key: "avatar_11", type: "avatar", name: "آواتار ۱۱", rarity: "common", price: 500 },
+  { key: "avatar_12", type: "avatar", name: "آواتار ۱۲", rarity: "common", price: 500 },
+  { key: "avatar_13", type: "avatar", name: "آواتار ۱۳", rarity: "common", price: 500 },
+  { key: "avatar_14", type: "avatar", name: "آواتار ۱۴", rarity: "common", price: 500 },
+  { key: "avatar_15", type: "avatar", name: "آواتار ۱۵", rarity: "common", price: 500 },
+  { key: "avatar_16", type: "avatar", name: "آواتار ۱۶", rarity: "common", price: 500 },
+  { key: "avatar_17", type: "avatar", name: "آواتار ۱۷", rarity: "common", price: 500 },
+  { key: "avatar_18", type: "avatar", name: "آواتار ۱۸", rarity: "common", price: 500 },
+  { key: "avatar_19", type: "avatar", name: "آواتار ۱۹", rarity: "common", price: 500 },
+  { key: "avatar_20", type: "avatar", name: "آواتار ۲۰", rarity: "common", price: 500 },
 ];
 
 const BADGE_ICON_PATHS = {
@@ -2322,7 +2354,9 @@ function switchShopTab(tab) {
 function renderShopGrid() {
   const grid = document.getElementById("shopGrid");
   const items = shopState.catalog.filter(i => i.type === shopState.tab);
-  const equippedKey = shopState.tab === "frame" ? shopState.equippedFrame : shopState.equippedBadge;
+  const equippedKey = shopState.tab === "frame" ? shopState.equippedFrame
+    : shopState.tab === "badge" ? shopState.equippedBadge
+    : `avatar_${currentAvatarIndex}`;
 
   grid.innerHTML = items.map(item => {
     const owned = shopState.owned.includes(item.key);
@@ -2330,6 +2364,9 @@ function renderShopGrid() {
     let preview;
     if (item.type === "frame") {
       preview = `<div class="avatar frame-${item.key.replace('frame_', '')}" style="width:56px;height:56px"><div class="avatar-bg" style="background-image:url('${avatarPath(currentAvatarIndex)}')"></div></div>`;
+    } else if (item.type === "avatar") {
+      const n = item.key.replace('avatar_', '');
+      preview = `<div class="avatar" style="width:56px;height:56px"><div class="avatar-bg" style="background-image:url('${avatarPath(n)}')"></div></div>`;
     } else {
       preview = renderBadgeIcon(item.key, 34);
     }
@@ -2373,6 +2410,17 @@ async function buyShopItemFn(itemKey) {
 }
 
 async function equipShopItemFn(itemType, itemKey) {
+  if (itemType === "avatar") {
+    if (!itemKey) return; // آواتار رو نمی‌شه "درآورد"، فقط عوض کرد
+    const n = parseInt(itemKey.replace("avatar_", ""), 10);
+    try {
+      await callFunction("update-avatar", { telegram_id: USER_ID, avatar_index: n });
+      currentAvatarIndex = n;
+      applyAvatarToUI();
+      renderShopGrid();
+    } catch (e) { /* silent */ }
+    return;
+  }
   try {
     const res = await callFunction("equip-shop-item", { telegram_id: USER_ID, item_type: itemType, item_key: itemKey });
     if (res.error) { if (tg) tg.showAlert(res.error); else alert(res.error); return; }
