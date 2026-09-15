@@ -231,13 +231,19 @@
   .lb-list { margin-top:16px; overflow-y:auto; }
   .lb-row { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:16px; margin-bottom:8px; background: var(--surface); border:1px solid var(--border-soft); cursor:pointer; transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
   .lb-row:active { transform: scale(0.985); background: var(--surface-2); }
-  .lb-row.top1 { background: linear-gradient(135deg, rgba(255,178,45,0.14), rgba(255,178,45,0.02)); border:1px solid rgba(255,178,45,0.3); }
+  .lb-row.top1 { background: linear-gradient(135deg, rgba(255,178,45,0.14), rgba(255,178,45,0.02)); border:1px solid rgba(255,178,45,0.3); padding:13px 12px; }
+  .lb-row.top2 { background: linear-gradient(135deg, rgba(203,213,225,0.1), rgba(203,213,225,0.02)); border:1px solid rgba(203,213,225,0.22); }
+  .lb-row.top3 { background: linear-gradient(135deg, rgba(205,127,50,0.11), rgba(205,127,50,0.02)); border:1px solid rgba(205,127,50,0.26); }
+  .medal { width:24px; height:24px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:900; font-variant-numeric:tabular-nums; box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.25); }
+  .medal.top1 { width:26px; height:26px; background: linear-gradient(150deg,#ffd76b,#c47800); color:#3a2400; }
+  .medal.top2 { background: linear-gradient(150deg,#e6ebf0,#9aa5b1); color:#1c2126; }
+  .medal.top3 { background: linear-gradient(150deg,#e0a668,#9a5f28); color:#2c1a08; }
   .lb-row.self { border:1px solid rgba(224,38,43,0.4); background: rgba(224,38,43,0.06); }
   .lb-row .pos { width:20px; font-size:13px; font-weight:800; color:var(--text-dim); text-align:center; font-variant-numeric:tabular-nums; }
   .lb-row.top1 .pos { color:#ffb22d; }
   .lb-row .av { width:36px; height:36px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; background: linear-gradient(135deg,#38383e,#1c1c20); overflow:hidden; }
   .lb-row .av img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
-  .lb-row.top1 .av { background: linear-gradient(135deg,#ffb22d,#c47800); color:#1a1200; }
+  .lb-row.top1 .av { width:40px; height:40px; background: linear-gradient(135deg,#ffb22d,#c47800); color:#1a1200; }
   .lb-row .info { flex:1; min-width:0; }
   .lb-row .uname { font-size:12.5px; font-weight:700; }
   .lb-row .uscore { font-size:12.5px; font-weight:800; color:var(--accent-soft); font-variant-numeric:tabular-nums; }
@@ -1386,12 +1392,16 @@ async function loadLeaderboard(period) {
     }
     list.innerHTML = rows.map(r => {
       const isSelf = r.telegram_id === USER_ID;
-      const cls = r.rank === 1 ? "top1" : (isSelf ? "self" : "");
+      const medalCls = r.rank === 1 ? "top1" : r.rank === 2 ? "top2" : r.rank === 3 ? "top3" : "";
+      const cls = medalCls || (isSelf ? "self" : "");
       const avImg = avatarPath(r.avatar_index || 3);
       const selfFrameClass = (isSelf && shopState.equippedFrame) ? ` frame-${shopState.equippedFrame.replace('frame_', '')}` : "";
       const selfBadgeHtml = isSelf ? renderBadgeIcon(shopState.equippedBadge, 14) : "";
+      const posHtml = medalCls
+        ? `<div class="medal ${medalCls}">${toFa(r.rank)}</div>`
+        : `<div class="pos">${toFa(r.rank)}</div>`;
       return `<div class="lb-row ${cls}" onclick="openPublicProfile(${r.telegram_id})">
-        <div class="pos">${toFa(r.rank)}</div>
+        ${posHtml}
         <div class="av${selfFrameClass}"><div class="avatar-bg" style="background-image:url('${avImg}')"></div></div>
         <div class="info"><div class="uname">${escapeHtml(r.username)} ${selfBadgeHtml}</div></div>
         <div class="uscore">${toFa(r.score)}</div>
@@ -2093,12 +2103,16 @@ async function loadTeamLeaderboard(period) {
         </div>`;
       return;
     }
-    list.innerHTML = rows.map(t => `<div class="lb-row ${t.rank === 1 ? "top1" : ""}">
-        <div class="pos">${toFa(t.rank)}</div>
-        ${renderTeamFlag(t, 36)}
+    list.innerHTML = rows.map(t => {
+      const medalCls = t.rank === 1 ? "top1" : t.rank === 2 ? "top2" : t.rank === 3 ? "top3" : "";
+      const posHtml = medalCls ? `<div class="medal ${medalCls}">${toFa(t.rank)}</div>` : `<div class="pos">${toFa(t.rank)}</div>`;
+      return `<div class="lb-row ${medalCls}">
+        ${posHtml}
+        ${renderTeamFlag(t, medalCls === "top1" ? 40 : 36)}
         <div class="info"><div class="uname">${escapeHtml(t.name)}</div></div>
         <div class="uscore">${toFa(t.score)}</div>
-      </div>`).join("");
+      </div>`;
+    }).join("");
   } catch (e) {
     list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:30px 0">خطا در بارگذاری</div>';
   }
