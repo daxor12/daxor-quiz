@@ -87,16 +87,31 @@
   .page-title { font-size:14.5px; font-weight:800; letter-spacing:-0.1px; }
   .spacer34 { width:34px; }
 
-  .loading-logo { width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--surface); border:2px solid rgba(var(--accent-rgb),0.5); box-shadow:0 0 30px rgba(var(--accent-rgb),0.28), var(--shadow-2); color:var(--text-dim); }
+  .loading-logo { width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--surface); border:2px solid rgba(var(--accent-rgb),0.5); box-shadow:0 0 30px rgba(var(--accent-rgb),0.28), var(--shadow-2); color:var(--text-dim); position:relative; z-index:1; }
   .loading-logo svg { width:72%; height:72%; }
+  .radar-sweep { position:relative; width:104px; height:104px; display:flex; align-items:center; justify-content:center; }
+  .radar-sweep::before {
+    content:""; position:absolute; inset:0; border-radius:50%;
+    background: conic-gradient(from 0deg, transparent 0deg, rgba(224,38,43,0.4) 18deg, transparent 42deg);
+    -webkit-mask: radial-gradient(circle, transparent 62%, black 64%, black 100%);
+    mask: radial-gradient(circle, transparent 62%, black 64%, black 100%);
+    animation: radarSpin 2.4s linear infinite;
+  }
+  @keyframes radarSpin { to { transform: rotate(360deg); } }
   .spinner { width:32px; height:32px; border-radius:50%; border:2.5px solid rgba(255,255,255,0.08); border-top-color:var(--accent-bright); border-right-color:var(--accent-bright); animation: spin 0.75s cubic-bezier(0.5,0,0.5,1) infinite; margin-top: 20px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size:11.5px; color:var(--text-faint); letter-spacing:1.2px; margin-top: 14px; font-weight:600; }
+  .loading-text { font-size:11.5px; color:var(--text-faint); letter-spacing:1.2px; margin-top: 4px; font-weight:600; }
 
   .fj-icon { width:76px; height:76px; border-radius:24px; margin:10px auto 0; background: linear-gradient(145deg, rgba(196,30,30,0.20), rgba(196,30,30,0.04)); border:1px solid rgba(196,30,30,0.3); display:flex; align-items:center; justify-content:center; box-shadow: var(--shadow-2); }
   .fj-title { text-align:center; font-size:17.5px; font-weight:800; margin-top:18px; letter-spacing:-0.2px; }
   .fj-desc { text-align:center; font-size:12px; color:var(--text-dim); margin-top:8px; line-height:1.9; padding:0 12px; }
-  .fj-channel-card { margin-top:22px; background: var(--surface); border:1px solid var(--border); border-radius:18px; padding:14px; display:flex; align-items:center; gap:12px; box-shadow: var(--shadow-1); }
+  .fj-channel-card {
+    margin-top:22px; background: linear-gradient(160deg, var(--surface-2) 0%, var(--surface) 100%);
+    border:1px solid rgba(var(--accent-rgb),0.22); padding:14px; position:relative; overflow:hidden;
+    display:flex; align-items:center; gap:12px; box-shadow: var(--shadow-1);
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  }
+  .fj-channel-card::before { content:""; position:absolute; inset:0 0 auto 0; height:2px; background: linear-gradient(90deg, transparent, var(--accent-bright), transparent); opacity:0.65; }
   .fj-channel-card .fj-mark { width:44px; height:44px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--surface-2); border:1px solid rgba(var(--accent-rgb),0.35); color:var(--text-dim); }
   .fj-channel-card .fj-mark svg { width:70%; height:70%; }
   .fj-channel-card .cn { font-size:13px; font-weight:700; }
@@ -330,6 +345,7 @@
   .settings-group-title { font-size:10.5px; color:var(--text-faint); letter-spacing:1.5px; margin-bottom:8px; padding:0 4px; font-weight:700; }
   .settings-row { display:flex; align-items:center; justify-content:space-between; background: var(--surface); border:1px solid var(--border); border-radius:16px; padding:13px 14px; margin-bottom:8px; }
   .settings-row .stitle { font-size:12.5px; font-weight:600; }
+  .settings-footer { margin-top:24px; text-align:center; font-size:9px; letter-spacing:2px; color:var(--text-faint); font-weight:700; }
   .toggle { width:40px; height:23px; border-radius:20px; background:#2a2930; position:relative; flex-shrink:0; cursor:pointer; transition: background var(--dur-fast) var(--ease); }
   .toggle.on { background: linear-gradient(135deg, var(--accent-bright), var(--accent)); }
   .toggle-dot { width:17px; height:17px; border-radius:50%; background:#fff; position:absolute; top:3px; right:20px; transition: right var(--dur-fast) var(--ease-spring); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
@@ -555,8 +571,9 @@
   <!-- 1. LOADING -->
   <div class="screen active" id="screen-loading">
     <div class="center-flex" style="flex:1">
-      <div class="loading-logo"><svg><use href="#daxor-mark"/></svg></div>
-      <div class="spinner"></div>
+      <div class="radar-sweep">
+        <div class="loading-logo"><svg><use href="#daxor-mark"/></svg></div>
+      </div>
       <div class="loading-text">در حال بررسی وضعیت عملیات...</div>
     </div>
   </div>
@@ -852,6 +869,7 @@
         <div class="toggle on" id="soundToggle" onclick="toggleSound()"><div class="toggle-dot"></div></div>
       </div>
     </div>
+    <div class="settings-footer">DAXOR // v1.0</div>
   </div>
 
   <!-- 11.b SHOP -->
