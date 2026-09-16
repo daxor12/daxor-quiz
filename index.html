@@ -2413,10 +2413,14 @@ async function buyShopItemFn(itemKey) {
   const doBuy = async () => {
     try {
       const res = await callFunction("buy-shop-item", { telegram_id: USER_ID, item_key: itemKey });
-      if (res.error) { if (tg) tg.showAlert(res.error); else alert(res.error); return; }
+      if (res.error) {
+        setTimeout(() => { if (tg) tg.showAlert(res.error); else alert(res.error); }, 250);
+        return;
+      }
       await loadShop();
-      if (tg) tg.showAlert("خرید موفق ✅");
-    } catch (e) { /* silent */ }
+    } catch (e) {
+      setTimeout(() => { if (tg) tg.showAlert("خطا در ارتباط با سرور، دوباره امتحان کن"); else alert("خطا در ارتباط با سرور"); }, 250);
+    }
   };
   const item = shopState.catalog.find(i => i.key === itemKey);
   const msg = `خرید «${item.name}» به قیمت ${toFa(item.price)} سکه انجام بشه؟`;
