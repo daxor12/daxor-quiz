@@ -1111,8 +1111,11 @@ async function callFunction(name, body) {
     },
     body: JSON.stringify(body),
   });
-  if (!res.ok && res.status >= 500) throw new Error("server_error");
-  return res.json();
+  try {
+    return await res.json();
+  } catch (e) {
+    throw new Error("server_error");
+  }
 }
 
 function openChannel() {
