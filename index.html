@@ -944,6 +944,9 @@
         <div id="teamLogoEditBtn" style="display:none;margin-top:12px">
           <button class="btn btn-secondary" style="width:100%;padding:10px" onclick="openLogoEditor()">ویرایش لوگو (۱۰۰ سکه)</button>
         </div>
+        <div id="teamGroupLinkBtn" style="display:none;margin-top:8px">
+          <button class="btn btn-secondary" style="width:100%;padding:10px" onclick="openTeamGroupLink()">💬 گروه گفتگوی یگان</button>
+        </div>
         <div class="team-invite-row">
           <div class="ac-input" id="teamDashInviteCode" style="flex:1">—</div>
           <button class="ac-btn" onclick="copyTeamInviteCode()">
@@ -1860,6 +1863,13 @@ function renderTeamDashboard(data) {
 
   const isCommander = team.commander_telegram_id === USER_ID;
   document.getElementById("teamLogoEditBtn").style.display = isCommander ? "block" : "none";
+  const groupBtn = document.getElementById("teamGroupLinkBtn");
+  if (team.linked_group_invite_link) {
+    groupBtn.style.display = "block";
+    groupBtn.dataset.link = team.linked_group_invite_link;
+  } else {
+    groupBtn.style.display = "none";
+  }
   const missionEl = document.getElementById("teamMissionAction");
   const my = data.my_membership;
   if (my && my.is_active_roster && my.mission_category) {
@@ -2498,6 +2508,13 @@ async function redeemGiftCode() {
   } catch (e) {
     msg.textContent = "خطا در ثبت کد";
   }
+}
+
+function openTeamGroupLink() {
+  const link = document.getElementById("teamGroupLinkBtn").dataset.link;
+  if (!link) return;
+  if (tg) tg.openTelegramLink(link);
+  else window.open(link, "_blank");
 }
 
 init();
