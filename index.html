@@ -77,6 +77,8 @@
   .btn-primary:active { box-shadow: 0 4px 12px rgba(var(--accent-rgb),0.28), inset 0 1px 0 rgba(255,255,255,0.1); filter:brightness(0.96); }
   .btn-secondary { background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.1); color:#ddd; }
   .btn-secondary:active { background: rgba(255,255,255,0.08); }
+  .btn-danger { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.35); color:#ef4444; }
+  .btn-danger:active { background: rgba(239,68,68,0.16); }
   .back-row { display:flex; align-items:center; justify-content:space-between; margin-bottom: 14px; }
   .back-btn {
     width:34px; height:34px; border-radius:var(--r-tight); background: rgba(255,255,255,0.045);
@@ -306,6 +308,21 @@
   .pid-unit-line { font-size:10.5px; color:var(--accent-soft); letter-spacing:0.2px; margin-top:6px; font-weight:700; }
   .pid-xp-row { display:flex; justify-content:space-between; align-items:baseline; position:relative; z-index:1; margin-bottom:10px; }
   .pid-level-badge { font-size:16px; font-weight:900; letter-spacing:-0.2px; font-variant-numeric:tabular-nums; }
+  .level-badge-wrap { display:flex; align-items:center; gap:7px; }
+  .level-badge {
+    position:relative; width:34px; height:38px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(155deg, var(--accent-bright), var(--accent-dark) 80%);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+  .level-badge::before {
+    content:""; position:absolute; inset:2px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(155deg, rgba(255,255,255,0.1), transparent 55%);
+  }
+  .level-badge span { position:relative; z-index:1; color:#fff; font-weight:900; font-size:13px; font-variant-numeric:tabular-nums; }
+  .level-badge-label { font-size:8px; font-weight:800; letter-spacing:1px; color:var(--text-faint); }
   .pid-xp-value { font-size:11px; font-weight:800; color:var(--accent-soft); font-variant-numeric:tabular-nums; }
   .pid-footer { margin-top:12px; text-align:left; direction:ltr; font-size:9px; letter-spacing:2px; color:var(--text-faint); font-weight:700; position:relative; z-index:1; }
   .stats-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:9px; margin-top:18px; }
@@ -757,7 +774,10 @@
       </div>
       <div class="pid-hr"></div>
       <div class="pid-xp-row">
-        <div class="pid-level-badge">LV <span id="profLevel">۱</span></div>
+        <div class="level-badge-wrap">
+          <div class="level-badge"><span id="profLevel">۱</span></div>
+          <div class="level-badge-label">لول</div>
+        </div>
         <div class="pid-xp-value"><span id="profProgressText">۰ / ۰</span></div>
       </div>
       <div class="p-progress-track"><div class="p-progress-fill" id="profProgressFill" style="width:0%"></div></div>
@@ -832,6 +852,7 @@
           <div class="pid-identity">
             <div class="p-name"><span id="pubNameText">کاربر</span> <span id="pubNameBadge" style="display:inline-flex;vertical-align:middle"></span></div>
             <div class="pid-rank-line">
+              <div class="level-badge-wrap"><div class="level-badge"><span id="pubLevel">۱</span></div></div>
               <div class="p-rank-chip" style="margin-top:0"><img id="pubRankImg" src="assets/ranks/rank-1.png" alt=""><span id="pubRankName">سرباز صفر</span></div>
             </div>
             <div class="pid-unit-line" id="pubUnitLine" style="display:none">یگان: <span id="pubUnitName"></span></div>
@@ -946,6 +967,9 @@
         </div>
         <div id="teamGroupLinkBtn" style="display:none;margin-top:8px">
           <button class="btn btn-secondary" style="width:100%;padding:10px" onclick="openTeamGroupLink()">💬 گروه گفتگوی یگان</button>
+        </div>
+        <div id="teamDisbandBtn" style="display:none;margin-top:8px">
+          <button class="btn btn-danger" style="width:100%;padding:10px" onclick="disbandTeam()">انحلال یگان</button>
         </div>
         <div class="team-invite-row">
           <div class="ac-input" id="teamDashInviteCode" style="flex:1">—</div>
@@ -1256,7 +1280,7 @@ function startCooldownDisplay(remainingSeconds, fullDurationSeconds = 5 * 3600) 
 function showQuestion() {
   const q = currentQuestions[currentQIndex];
   document.getElementById("quizProgress").textContent = `سوال ${toFa(currentQIndex + 1)} از ${toFa(currentQuestions.length)}`;
-  document.getElementById("quizCategory").textContent = q.category || "عمومی";
+  document.getElementById("quizCategory").textContent = TEAM_CATEGORY_LABELS[q.category] || q.category || "عمومی";
   document.getElementById("quizQuestionText").textContent = q.question_text;
   document.getElementById("quizProgressFill").style.width = `${((currentQIndex + 1) / currentQuestions.length) * 100}%`;
 
@@ -1529,7 +1553,7 @@ function renderCategoryStats(containerId, stats) {
   el.innerHTML = stats.map(s => {
     const pct = Math.round(s.percent ?? 0);
     return `<div class="cat-stat-row">
-      <div class="cat-stat-top"><span>${s.category}</span><span>${toFa(pct)}٪ (${toFa(s.correct_count)}/${toFa(s.total_count)})</span></div>
+      <div class="cat-stat-top"><span>${TEAM_CATEGORY_LABELS[s.category] || s.category}</span><span>${toFa(pct)}٪ (${toFa(s.correct_count)}/${toFa(s.total_count)})</span></div>
       <div class="cat-stat-bar-track"><div class="cat-stat-bar-fill" style="width:${pct}%"></div></div>
     </div>`;
   }).join("");
@@ -1562,6 +1586,7 @@ async function openPublicProfile(telegramId) {
       pubBadgeSlot.innerHTML = "";
     }
     document.getElementById("pubRankName").textContent = p.current_rank || "سرباز صفر";
+    document.getElementById("pubLevel").textContent = toFa(p.level || 1);
     document.getElementById("pubRankImg").src = rankImgPath(p.current_rank);
     document.getElementById("pubRankNameStat").textContent = p.current_rank || "سرباز صفر";
     document.getElementById("pubScore").textContent = toFa(p.total_score || 0);
@@ -1870,6 +1895,7 @@ function renderTeamDashboard(data) {
   } else {
     groupBtn.style.display = "none";
   }
+  document.getElementById("teamDisbandBtn").style.display = isCommander ? "block" : "none";
   const missionEl = document.getElementById("teamMissionAction");
   const my = data.my_membership;
   if (my && my.is_active_roster && my.mission_category) {
@@ -1912,7 +1938,7 @@ function renderTeamDashboard(data) {
       <div class="mav${selfFrameClass}"><div class="avatar-bg" style="background-image:url('${avatarPath(m.avatar_index || 3)}')"></div></div>
       <div class="minfo">
         <div class="mname">${escapeHtml(m.username)} ${selfBadgeHtml} ${badges}</div>
-        <div class="msub"><span>Lv ${toFa(m.level ?? 1)}</span><span>${toFa(m.total_score ?? 0)} امتیاز</span></div>
+        <div class="msub"><span>Lv ${toFa(m.level ?? 1)}</span><span>${m.current_rank || "سرباز صفر"}</span></div>
       </div>
       <div class="member-controls">
         ${removeBtn}
@@ -2515,6 +2541,28 @@ function openTeamGroupLink() {
   if (!link) return;
   if (tg) tg.openTelegramLink(link);
   else window.open(link, "_blank");
+}
+
+async function disbandTeam() {
+  const doDisband = async () => {
+    try {
+      const res = await callFunction("disband-team", { telegram_id: USER_ID });
+      if (res.error) {
+        if (tg) tg.showAlert(res.error); else alert(res.error);
+        return;
+      }
+      myTeamData = null;
+      await loadTeamScreen();
+    } catch (e) {
+      if (tg) tg.showAlert("خطا در ارتباط با سرور"); else alert("خطا در ارتباط با سرور");
+    }
+  };
+  const msg = "یگان کامل و برای همیشه حذف می‌شه و همه‌ی اعضا خارج می‌شن. این کار قابل بازگشت نیست. مطمئنی؟";
+  if (tg) {
+    tg.showConfirm(msg, async (ok) => { if (ok) await doDisband(); });
+  } else if (confirm(msg)) {
+    await doDisband();
+  }
 }
 
 init();
