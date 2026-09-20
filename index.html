@@ -349,6 +349,7 @@
   }
   .edit-pencil:active { transform: scale(0.88); }
   .av-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-top:18px; }
+  .av-free-note { grid-column: 1 / -1; background: rgba(34,197,94,0.09); border:1px solid rgba(34,197,94,0.28); border-radius:14px; padding:11px 13px; font-size:11px; color:#4ade80; line-height:1.8; margin-bottom:2px; }
   .av-cell { position:relative; aspect-ratio:1; border-radius:18px; overflow:hidden; border:2px solid transparent; cursor:pointer; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   .av-cell:active { transform: scale(0.94); }
   .av-cell.selected { border-color:var(--accent-bright); box-shadow:0 0 14px rgba(224,38,43,0.4); }
@@ -363,6 +364,17 @@
   .settings-row { display:flex; align-items:center; justify-content:space-between; background: var(--surface); border:1px solid var(--border); border-radius:16px; padding:13px 14px; margin-bottom:8px; }
   .settings-row .stitle { font-size:12.5px; font-weight:600; }
   .settings-footer { margin-top:24px; text-align:center; font-size:9px; letter-spacing:2px; color:var(--text-faint); font-weight:700; }
+  .guide-eyebrow { display:inline-block; font-size:10.5px; color:var(--accent-soft); border:1px solid rgba(var(--accent-rgb),0.4); border-radius:999px; padding:3px 12px; font-weight:700; }
+  .guide-title { font-size:18px; font-weight:800; margin-top:12px; letter-spacing:-0.2px; }
+  .guide-sub { color:var(--text-dim); font-size:11.5px; margin-top:8px; line-height:1.9; }
+  .guide-steps { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+  .guide-step { display:flex; gap:12px; align-items:flex-start; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:13px 14px; }
+  .guide-step-num { flex-shrink:0; width:26px; height:26px; border-radius:9px; background:linear-gradient(135deg, var(--accent-bright), var(--accent)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11.5px; color:#fff; }
+  .guide-step-body { font-size:12px; line-height:1.9; color:var(--text); }
+  .guide-copy-chip { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; padding:4px 10px; margin-top:6px; font-size:10.5px; color:var(--accent-soft); direction:ltr; cursor:pointer; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
+  .guide-copy-chip:active { transform: scale(0.95); background:rgba(255,255,255,0.09); }
+  .guide-note { margin-top:16px; background:rgba(var(--accent-rgb),0.08); border:1px solid rgba(var(--accent-rgb),0.28); border-radius:14px; padding:13px 15px; font-size:11px; color:#f0c4c4; line-height:1.8; }
+  .guide-result { margin-top:16px; text-align:center; font-size:11px; color:var(--text-dim); }
   .volume-slider {
     -webkit-appearance: none; appearance: none; width:100%; height:5px; border-radius:10px;
     background: rgba(255,255,255,0.08); outline:none;
@@ -645,7 +657,7 @@
     <div class="home-top">
       <div class="greet">
         <div class="avatar"><div id="homeAvatar" class="avatar-bg" style="background-image:url('assets/avatars/avatar-3.png')"></div></div>
-        <div class="greet-text"><div class="hi">خوش اومدی</div><div class="name" id="homeName">سرباز</div></div>
+        <div class="greet-text"><div class="hi">خوش اومدی</div><div class="name"><span id="homeName">سرباز</span> <span id="homeNameBadge" style="display:inline-flex;vertical-align:middle"></span></div></div>
       </div>
       <div class="home-brand"><span>DAXOR</span><svg><use href="#daxor-mark"/></svg></div>
     </div>
@@ -985,7 +997,7 @@
         <div id="teamLogoEditBtn" style="display:none;margin-top:12px">
           <button class="btn btn-secondary" style="width:100%;padding:10px" onclick="openLogoEditor()">ویرایش لوگو (۱۰۰ سکه)</button>
         </div>
-        <div id="teamGroupLinkBtn" style="display:none;margin-top:8px">
+        <div id="teamGroupLinkBtn" style="margin-top:8px">
           <button class="btn btn-secondary" style="width:100%;padding:10px" onclick="openTeamGroupLink()">💬 گروه گفتگوی یگان</button>
         </div>
         <div id="teamDisbandBtn" style="display:none;margin-top:8px">
@@ -1026,6 +1038,58 @@
     </div>
   </div>
 
+  <!-- 12.b TEAM GROUP LINK GUIDE -->
+  <div class="screen" id="screen-teamguide">
+    <div class="back-row">
+      <div class="back-btn" onclick="showScreen('team')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg></div>
+      <div class="page-title">اتصال گروه یگان</div>
+      <div class="spacer34"></div>
+    </div>
+
+    <span class="guide-eyebrow">راهنمای فرماندهان</span>
+    <div class="guide-title">اتصال گروه یگان به ربات</div>
+    <div class="guide-sub">با وصل کردن گروه تلگرامی یگان‌تان، نتیجه‌ی پادها، یادآوری ماموریت‌ها و ارتقای یگان به‌طور خودکار همان‌جا اعلام می‌شود.</div>
+
+    <div class="guide-steps">
+      <div class="guide-step">
+        <div class="guide-step-num">۱</div>
+        <div class="guide-step-body">اگر گروه تلگرامی یگان‌تان را هنوز نساخته‌اید، اول یک <b>گروه جدید</b> در تلگرام بسازید و اعضای یگان را به آن اضافه کنید.</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step-num">۲</div>
+        <div class="guide-step-body">
+          ربات <b id="guideBotName">@DaxorQuizBot</b> را به همین گروه اضافه کنید (از بخش افزودن عضو گروه).
+          <div class="guide-copy-chip" onclick="copyGuideText('@' + BOT_USERNAME, this)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span id="guideBotNameChip"></span>
+          </div>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step-num">۳</div>
+        <div class="guide-step-body">از تنظیمات گروه، ربات را <b>ادمین</b> کنید. حتماً دسترسی «دعوت اعضا از طریق لینک» را برایش فعال بگذارید؛ بدون این دسترسی مرحله‌ی بعد با خطا مواجه می‌شود.</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step-num">۴</div>
+        <div class="guide-step-body">
+          در همان گروه، دستور زیر را ارسال کنید:
+          <div class="guide-copy-chip" onclick="copyGuideText('/linkteam', this)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>/linkteam</span>
+          </div>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step-num">۵</div>
+        <div class="guide-step-body">ربات بررسی می‌کند که شما در سامانه به‌عنوان فرمانده‌ی یگان ثبت شده باشید، سپس گروه را خودکار به یگان شما وصل می‌کند.</div>
+      </div>
+    </div>
+
+    <div class="guide-note"><b>نکته:</b> فقط فرماندهی که به‌عنوان فرمانده‌ی همان یگان در سامانه ثبت شده باشد می‌تواند این دستور را اجرا کند؛ در غیر این صورت ربات پیام «فرمانده‌ی هیچ یگانی نیستید» می‌دهد.</div>
+
+    <div class="guide-result">پس از اتصال موفق: <b>«✅ این گروه با موفقیت به یگان وصل شد!»</b></div>
+  </div>
+
   <!-- 13. TEAM LOGO EDITOR -->
   <div class="screen" id="screen-team-logo">
     <div class="back-row">
@@ -1055,7 +1119,7 @@
     </div>
 
     <div id="logoEditorMsg" style="text-align:center;font-size:11px;color:#ff6b6b;margin-top:14px"></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="saveTeamLogo()">ذخیره لوگو (۱۰۰ سکه)</button>
+    <button class="btn btn-primary" style="width:100%;margin-top:14px" id="saveLogoBtn" onclick="saveTeamLogo()">ذخیره لوگو (۱۰۰ سکه)</button>
   </div>
 
 </div>
@@ -1596,10 +1660,13 @@ function applyAvatarToUI() {
 function buildAvatarGrid() {
   const grid = document.getElementById("avGrid");
   let html = "";
+  if (!shopState.avatarChosenOnce) {
+    html += `<div class="av-free-note">این اولین انتخابته — هر آواتاری رو که بخوای رایگان بردار، از دفعه‌ی بعد باید از فروشگاه بخری</div>`;
+  }
   for (let i = 1; i <= AVATAR_COUNT; i++) {
     const key = `avatar_${i}`;
     const item = SHOP_CATALOG.find(x => x.key === key);
-    const owned = shopState.owned.includes(key) || !item;
+    const owned = shopState.owned.includes(key) || !item || !shopState.avatarChosenOnce;
     const sel = i === currentAvatarIndex ? " selected" : "";
     if (owned) {
       html += `<div class="av-cell${sel}" onclick="selectAvatar(${i})"><div class="avatar-bg" style="background-image:url('${avatarPath(i)}')"></div>${i === currentAvatarIndex ? '<div class="av-check">✓</div>' : ""}</div>`;
@@ -1822,7 +1889,7 @@ function renderBadgeIcon(key, size) {
   return `<svg class="name-badge rarity-${rarity}" width="${s}" height="${s}" viewBox="0 0 24 24">${BADGE_ICON_PATHS[key]}</svg>`;
 }
 
-let shopState = { catalog: [], owned: [], equippedFrame: null, equippedBadge: null, coins: 0, tab: "frame" };
+let shopState = { catalog: [], owned: [], equippedFrame: null, equippedBadge: null, coins: 0, tab: "frame", avatarChosenOnce: false };
 
 function renderTeamFlag(team, size) {
   const pattern = team.logo_pattern || "solid";
@@ -1880,6 +1947,7 @@ async function createTeam() {
     const res = await callFunction("create-team", { telegram_id: USER_ID, team_name: name, description });
     if (res.error) { msg.textContent = res.error; return; }
     await loadTeamScreen();
+    if (myTeamData && myTeamData.team) openLogoEditor();
   } catch (e) { msg.textContent = "خطا در ساخت یگان"; }
 }
 
@@ -1967,10 +2035,9 @@ function renderTeamDashboard(data) {
   document.getElementById("teamLogoEditBtn").style.display = isCommander ? "block" : "none";
   const groupBtn = document.getElementById("teamGroupLinkBtn");
   if (team.linked_group_invite_link) {
-    groupBtn.style.display = "block";
     groupBtn.dataset.link = team.linked_group_invite_link;
   } else {
-    groupBtn.style.display = "none";
+    groupBtn.dataset.link = "";
   }
   document.getElementById("teamDisbandBtn").style.display = isCommander ? "block" : "none";
   const missionEl = document.getElementById("teamMissionAction");
@@ -2109,6 +2176,26 @@ function copyTeamInviteCode() {
   }
 }
 
+function copyGuideText(text, chipEl) {
+  if (!navigator.clipboard) return;
+  navigator.clipboard.writeText(text).then(() => {
+    if (chipEl) {
+      const span = chipEl.querySelector("span");
+      const original = span.textContent;
+      span.textContent = "کپی شد ✓";
+      setTimeout(() => { span.textContent = original; }, 1200);
+    }
+    if (tg) tg.HapticFeedback?.notificationOccurred("success");
+  });
+}
+document.addEventListener("DOMContentLoaded", () => {
+  const botHandle = "@" + BOT_USERNAME;
+  const nameEl = document.getElementById("guideBotName");
+  const chipEl = document.getElementById("guideBotNameChip");
+  if (nameEl) nameEl.textContent = botHandle;
+  if (chipEl) chipEl.textContent = botHandle;
+});
+
 let logoEditorState = { pattern: "solid", colors: ["#3b82f6"], emblem: null, emblemColor: "#ffffff" };
 
 function openLogoEditor() {
@@ -2121,6 +2208,8 @@ function openLogoEditor() {
     emblemColor: team.logo_emblem_color || "#ffffff",
   };
   document.getElementById("logoEditorMsg").textContent = "";
+  const saveBtn = document.getElementById("saveLogoBtn");
+  saveBtn.textContent = team.logo_edited_once ? "ذخیره لوگو (۱۰۰ سکه)" : "ذخیره لوگو (رایگان، بار اول)";
   renderLogoPatternGrid();
   renderLogoEmblemGrid();
   renderLogoColorInputs();
@@ -2214,6 +2303,7 @@ function updateLogoPreview() {
 async function saveTeamLogo() {
   const msg = document.getElementById("logoEditorMsg");
   msg.textContent = "";
+  const isFirstEdit = myTeamData && myTeamData.team && !myTeamData.team.logo_edited_once;
   const doSave = async () => {
     try {
       const res = await callFunction("update-team-logo", {
@@ -2230,6 +2320,10 @@ async function saveTeamLogo() {
       msg.textContent = "خطا در ذخیره‌ی لوگو";
     }
   };
+  if (isFirstEdit) {
+    await doSave();
+    return;
+  }
   const confirmMsg = "تغییر لوگو ۱۰۰ سکه هزینه داره. مطمئنی؟";
   if (tg) {
     tg.showConfirm(confirmMsg, async (ok) => { if (ok) await doSave(); });
@@ -2474,6 +2568,7 @@ async function loadShop() {
     shopState.equippedFrame = res.equipped_frame;
     shopState.equippedBadge = res.equipped_badge;
     shopState.coins = res.coins || 0;
+    shopState.avatarChosenOnce = res.avatar_chosen_once ?? false;
     document.getElementById("shopCoinBalance").textContent = `${toFa(shopState.coins)} سکه`;
     renderShopGrid();
   } catch (e) { /* silent */ }
@@ -2583,6 +2678,8 @@ function applyEquippedCosmetics() {
   });
   const badgeSlot = document.getElementById("profNameBadge");
   if (badgeSlot) badgeSlot.innerHTML = renderBadgeIcon(shopState.equippedBadge, 16);
+  const homeBadgeSlot = document.getElementById("homeNameBadge");
+  if (homeBadgeSlot) homeBadgeSlot.innerHTML = renderBadgeIcon(shopState.equippedBadge, 15);
 }
 
 async function loadEquippedCosmetics() {
@@ -2593,6 +2690,7 @@ async function loadEquippedCosmetics() {
     shopState.owned = res.owned_keys || [];
     shopState.equippedFrame = res.equipped_frame;
     shopState.equippedBadge = res.equipped_badge;
+    shopState.avatarChosenOnce = res.avatar_chosen_once ?? false;
     applyEquippedCosmetics();
   } catch (e) { /* silent */ }
 }
@@ -2618,9 +2716,12 @@ async function redeemGiftCode() {
 
 function openTeamGroupLink() {
   const link = document.getElementById("teamGroupLinkBtn").dataset.link;
-  if (!link) return;
-  if (tg) tg.openTelegramLink(link);
-  else window.open(link, "_blank");
+  if (link) {
+    if (tg) tg.openTelegramLink(link);
+    else window.open(link, "_blank");
+  } else {
+    showScreen("teamguide");
+  }
 }
 
 async function disbandTeam() {
