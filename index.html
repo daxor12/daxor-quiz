@@ -363,6 +363,21 @@
   .settings-row { display:flex; align-items:center; justify-content:space-between; background: var(--surface); border:1px solid var(--border); border-radius:16px; padding:13px 14px; margin-bottom:8px; }
   .settings-row .stitle { font-size:12.5px; font-weight:600; }
   .settings-footer { margin-top:24px; text-align:center; font-size:9px; letter-spacing:2px; color:var(--text-faint); font-weight:700; }
+  .volume-slider {
+    -webkit-appearance: none; appearance: none; width:100%; height:5px; border-radius:10px;
+    background: rgba(255,255,255,0.08); outline:none;
+  }
+  .volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width:18px; height:18px; border-radius:50%;
+    background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 0 0 2px rgba(0,0,0,0.5); cursor:pointer;
+  }
+  .volume-slider::-moz-range-thumb {
+    width:18px; height:18px; border-radius:50%; border:none;
+    background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor:pointer;
+  }
+  .volume-slider:disabled { opacity:0.4; }
   .toggle { width:40px; height:23px; border-radius:20px; background:#2a2930; position:relative; flex-shrink:0; cursor:pointer; transition: background var(--dur-fast) var(--ease); }
   .toggle.on { background: linear-gradient(135deg, var(--accent-bright), var(--accent)); }
   .toggle-dot { width:17px; height:17px; border-radius:50%; background:#fff; position:absolute; top:3px; right:20px; transition: right var(--dur-fast) var(--ease-spring); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
@@ -889,6 +904,11 @@
         <div class="stitle">صدای بازی</div>
         <div class="toggle on" id="soundToggle" onclick="toggleSound()"><div class="toggle-dot"></div></div>
       </div>
+      <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px">
+        <div class="stitle">میزان صدا</div>
+        <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="60"
+          oninput="setSoundVolume(this.value/100)" onchange="sfxTick()">
+      </div>
     </div>
     <div class="settings-footer">DAXOR // v1.0</div>
   </div>
@@ -1094,6 +1114,124 @@ let timerInterval = null;
 const QUESTION_SECONDS = 20;
 let currentLbPeriod = "weekly";
 let soundEnabled = localStorage.getItem("daxor_sound") !== "off";
+let soundVolume = parseFloat(localStorage.getItem("daxor_volume") ?? "0.6");
+
+// ===== موتور صدا (Web Audio API — بدون فایل خارجی) =====
+let audioCtx = null;
+let masterGain = null;
+let ambientNodes = null;
+let ambientIntervals = [];
+
+function ensureAudioCtx() {
+  if (audioCtx) return audioCtx;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = soundVolume;
+  masterGain.connect(audioCtx.destination);
+  return audioCtx;
+}
+
+function playTone(freq, duration, type, startGain, delay) {
+  if (!soundEnabled) return;
+  const ctx = ensureAudioCtx();
+  if (ctx.state === "suspended") ctx.resume();
+  const t0 = ctx.currentTime + (delay || 0);
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type || "sine";
+  osc.frequency.setValueAtTime(freq, t0);
+  gain.gain.setValueAtTime(0, t0);
+  gain.gain.linearRampToValueAtTime(startGain ?? 0.2, t0 + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start(t0);
+  osc.stop(t0 + duration + 0.02);
+}
+
+function playNoiseBurst(duration, startGain, filterFreq) {
+  if (!soundEnabled) return;
+  const ctx = ensureAudioCtx();
+  if (ctx.state === "suspended") ctx.resume();
+  const bufferSize = Math.floor(ctx.sampleRate * duration);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  const filter = ctx.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = filterFreq;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(startGain, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(masterGain);
+  src.start();
+}
+
+function sfxTick() { playTone(1100, 0.04, "sine", 0.10); }
+function sfxCorrect() { playTone(880, 0.1, "sine", 0.18); playTone(1320, 0.14, "sine", 0.16, 0.09); }
+function sfxWrong() { playTone(160, 0.22, "sawtooth", 0.14); }
+function sfxCountdownBlip() { playTone(1700, 0.06, "sine", 0.12); }
+function sfxCoin() { playTone(1046, 0.08, "triangle", 0.16); playTone(1568, 0.12, "triangle", 0.15, 0.07); }
+function sfxError() { playTone(200, 0.09, "square", 0.1); playTone(180, 0.09, "square", 0.1, 0.1); }
+function sfxUnlock() { playTone(660, 0.1, "sine", 0.15); playTone(880, 0.1, "sine", 0.15, 0.09); playTone(1320, 0.18, "sine", 0.16, 0.18); }
+
+// ===== فضا-صدای پس‌زمینه (رادار/سیگنال) =====
+function startAmbient() {
+  stopAmbient();
+  if (!soundEnabled) return;
+  const ctx = ensureAudioCtx();
+  if (ctx.state === "suspended") ctx.resume();
+
+  const drone = ctx.createOscillator();
+  drone.type = "sine";
+  drone.frequency.value = 55;
+  const droneFilter = ctx.createBiquadFilter();
+  droneFilter.type = "lowpass";
+  droneFilter.frequency.value = 200;
+  const droneGain = ctx.createGain();
+  droneGain.gain.value = 0.02;
+  drone.connect(droneFilter);
+  droneFilter.connect(droneGain);
+  droneGain.connect(masterGain);
+  drone.start();
+  ambientNodes = { drone };
+
+  const radarInterval = setInterval(() => {
+    if (soundEnabled) playTone(920, 0.12, "sine", 0.06);
+  }, 4500);
+  const staticInterval = setInterval(() => {
+    if (soundEnabled && Math.random() < 0.4) playNoiseBurst(0.15, 0.025, 3000);
+  }, 17000);
+  ambientIntervals = [radarInterval, staticInterval];
+}
+
+function stopAmbient() {
+  if (ambientNodes) {
+    try { ambientNodes.drone.stop(); } catch (e) { /* already stopped */ }
+    ambientNodes = null;
+  }
+  ambientIntervals.forEach(clearInterval);
+  ambientIntervals = [];
+}
+
+function setSoundVolume(v) {
+  soundVolume = v;
+  localStorage.setItem("daxor_volume", String(v));
+  if (masterGain) masterGain.gain.value = v;
+}
+
+let ambientStarted = false;
+function initAmbientOnce() {
+  if (ambientStarted) return;
+  ambientStarted = true;
+  if (soundEnabled) startAmbient();
+}
+document.body.addEventListener("touchstart", initAmbientOnce, { once: true });
+document.body.addEventListener("click", initAmbientOnce, { once: true });
 
 function showScreen(name) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
@@ -1320,12 +1458,14 @@ function startQuestionTimer() {
     document.getElementById("quizTimerNum").textContent = toFa(Math.max(remaining, 0));
     ring.style.strokeDashoffset = circumference * (1 - remaining / QUESTION_SECONDS);
     ringWrap.className = `timer-ring ${timerState(Math.max(remaining, 0))}`;
+    if (remaining > 0 && remaining <= 3) sfxCountdownBlip();
     if (remaining <= 0) { clearInterval(timerInterval); selectAnswer(-1); }
   }, 1000);
 }
 
 async function selectAnswer(selectedIndex) {
   clearInterval(timerInterval);
+  if (selectedIndex >= 0) sfxTick();
   const timeTaken = Math.round((Date.now() - questionStartTime) / 1000);
   const q = currentQuestions[currentQIndex];
   const opts = document.querySelectorAll(".opt");
@@ -1345,6 +1485,8 @@ async function selectAnswer(selectedIndex) {
   if (selectedIndex >= 0 && selectedIndex !== result.correct_index) {
     opts[selectedIndex]?.classList.add("wrong");
   }
+  if (selectedIndex >= 0 && selectedIndex === result.correct_index) sfxCorrect();
+  else if (selectedIndex >= 0) sfxWrong();
 
   setTimeout(() => {
     currentQIndex++;
@@ -1367,6 +1509,7 @@ async function finishGame() {
     if (pct >= 80) {
       badge.classList.add("tier-elite");
       titleEl.textContent = "عملکرد عالی";
+      sfxUnlock();
     } else if (pct < 50) {
       badge.classList.add("tier-weak");
       titleEl.textContent = "نیاز به تمرین بیشتر";
@@ -1616,9 +1759,14 @@ function toggleSound() {
   soundEnabled = !soundEnabled;
   localStorage.setItem("daxor_sound", soundEnabled ? "on" : "off");
   document.getElementById("soundToggle").classList.toggle("on", soundEnabled);
+  const slider = document.getElementById("volumeSlider");
+  if (slider) slider.disabled = !soundEnabled;
+  if (soundEnabled) { if (ambientStarted) startAmbient(); } else { stopAmbient(); }
 }
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("soundToggle")?.classList.toggle("on", soundEnabled);
+  const slider = document.getElementById("volumeSlider");
+  if (slider) { slider.value = Math.round(soundVolume * 100); slider.disabled = !soundEnabled; }
 });
 
 const TEAM_CATEGORY_LABELS = {
@@ -2453,11 +2601,14 @@ async function buyShopItemFn(itemKey) {
     try {
       const res = await callFunction("buy-shop-item", { telegram_id: USER_ID, item_key: itemKey });
       if (res.error) {
+        sfxError();
         setTimeout(() => { if (tg) tg.showAlert(res.error); else alert(res.error); }, 250);
         return;
       }
+      sfxCoin();
       await loadShop();
     } catch (e) {
+      sfxError();
       setTimeout(() => { if (tg) tg.showAlert("خطا در ارتباط با سرور، دوباره امتحان کن"); else alert("خطا در ارتباط با سرور"); }, 250);
     }
   };
