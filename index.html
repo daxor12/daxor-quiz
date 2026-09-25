@@ -657,7 +657,7 @@
     <div class="home-top">
       <div class="greet">
         <div class="avatar"><div id="homeAvatar" class="avatar-bg" style="background-image:url('assets/avatars/avatar-3.png')"></div></div>
-        <div class="greet-text"><div class="hi">خوش اومدی</div><div class="name"><span id="homeName">سرباز</span> <span id="homeNameBadge" style="display:inline-flex;vertical-align:middle"></span></div></div>
+        <div class="greet-text"><div class="hi">خوش اومدی</div><div class="name"><span id="homeName">سرباز</span> <span id="homeVerifiedBadge" style="display:inline-flex;vertical-align:middle"></span> <span id="homeNameBadge" style="display:inline-flex;vertical-align:middle"></span></div></div>
       </div>
       <div class="home-brand"><span>DAXOR</span><svg><use href="#daxor-mark"/></svg></div>
     </div>
@@ -791,7 +791,7 @@
           </div>
         </div>
         <div class="pid-identity">
-          <div class="p-name" id="profName"><span id="profNameText">سرباز</span> <span id="profNameBadge" style="display:inline-flex;vertical-align:middle"></span></div>
+          <div class="p-name" id="profName"><span id="profNameText">سرباز</span> <span id="profVerifiedBadge" style="display:inline-flex;vertical-align:middle"></span> <span id="profNameBadge" style="display:inline-flex;vertical-align:middle"></span></div>
           <div class="pid-rank-line">
             <div class="p-rank-chip" style="margin-top:0"><img id="profRankImg" src="assets/ranks/rank-1.png" alt=""><span id="profRankName">سرباز صفر</span></div>
           </div>
@@ -877,7 +877,7 @@
         <div class="pid-body">
           <div class="p-avatar" id="pubAvatarWrap"><div id="pubAvatar" class="avatar-bg" style="background-image:url('assets/avatars/avatar-3.png')"></div></div>
           <div class="pid-identity">
-            <div class="p-name"><span id="pubNameText">کاربر</span> <span id="pubNameBadge" style="display:inline-flex;vertical-align:middle"></span></div>
+            <div class="p-name"><span id="pubNameText">کاربر</span> <span id="pubVerifiedBadge" style="display:inline-flex;vertical-align:middle"></span> <span id="pubNameBadge" style="display:inline-flex;vertical-align:middle"></span></div>
             <div class="pid-rank-line">
               <div class="level-badge-wrap"><div class="level-badge"><span id="pubLevel">۱</span></div></div>
               <div class="p-rank-chip" style="margin-top:0"><img id="pubRankImg" src="assets/ranks/rank-1.png" alt=""><span id="pubRankName">سرباز صفر</span></div>
@@ -990,7 +990,7 @@
             <div class="team-level-tag" id="teamDashLevelTag">Lv ۱</div>
           </div>
           <div style="flex:1">
-            <div class="team-name-lg" id="teamDashName">—</div>
+            <div class="team-name-lg"><span id="teamDashName">—</span> <span id="teamDashVerifiedBadge" style="display:inline-flex;vertical-align:middle"></span></div>
             <div class="team-desc-sm" id="teamDashDesc"></div>
           </div>
         </div>
@@ -1321,6 +1321,7 @@ async function loadHomeData() {
   try {
     const profile = await callFunction("get-profile", { telegram_id: USER_ID });
     document.getElementById("homeName").textContent = profile.username || "سرباز";
+    document.getElementById("homeVerifiedBadge").innerHTML = renderVerifiedBadge(profile.is_verified, 14);
     document.getElementById("homeRankName").textContent = profile.current_rank || "سرباز صفر";
     document.getElementById("homeRankImg").src = rankImgPath(profile.current_rank);
     document.getElementById("statGames").textContent = toFa(profile.games_played || 0);
@@ -1593,7 +1594,7 @@ async function loadLeaderboard(period) {
       return `<div class="lb-row ${cls}" onclick="openPublicProfile(${r.telegram_id})">
         ${posHtml}
         <div class="av${selfFrameClass}"><div class="avatar-bg" style="background-image:url('${avImg}')"></div></div>
-        <div class="info"><div class="uname">${escapeHtml(r.username)} ${selfBadgeHtml}</div></div>
+        <div class="info"><div class="uname">${escapeHtml(r.username)} ${renderVerifiedBadge(r.is_verified, 13)} ${selfBadgeHtml}</div></div>
         <div class="uscore">${toFa(r.score)}</div>
       </div>`;
     }).join("");
@@ -1606,6 +1607,7 @@ async function loadProfileScreen() {
   try {
     const profile = await callFunction("get-profile", { telegram_id: USER_ID });
     document.getElementById("profNameText").textContent = profile.username || "سرباز";
+    document.getElementById("profVerifiedBadge").innerHTML = renderVerifiedBadge(profile.is_verified, 15);
     document.getElementById("profRankName").textContent = profile.current_rank || "سرباز صفر";
     document.getElementById("profRankImg").src = rankImgPath(profile.current_rank);
     document.getElementById("profGames").textContent = toFa(profile.games_played || 0);
@@ -1715,6 +1717,7 @@ async function openPublicProfile(telegramId) {
 
     document.getElementById("pubAvatar").style.backgroundImage = `url('${avatarPath(p.avatar_index || 3)}')`;
     document.getElementById("pubNameText").textContent = p.username || "کاربر";
+    document.getElementById("pubVerifiedBadge").innerHTML = renderVerifiedBadge(p.is_verified, 15);
     const pubAvatarWrap = document.getElementById("pubAvatarWrap");
     pubAvatarWrap.className = pubAvatarWrap.className.replace(/\bframe-\S+/g, "").trim();
     const pubBadgeSlot = document.getElementById("pubNameBadge");
@@ -1889,6 +1892,20 @@ function renderBadgeIcon(key, size) {
   return `<svg class="name-badge rarity-${rarity}" width="${s}" height="${s}" viewBox="0 0 24 24">${BADGE_ICON_PATHS[key]}</svg>`;
 }
 
+let __verifiedBadgeCounter = 0;
+function renderVerifiedBadge(isVerified, size) {
+  if (!isVerified) return "";
+  const id = "vbg" + (__verifiedBadgeCounter++);
+  const s = size || 15;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 40 40" style="display:inline-block;vertical-align:middle;flex-shrink:0" aria-label="تایید شده">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0262b"/><stop offset="1" stop-color="#8f1518"/></linearGradient></defs>
+    <circle cx="20" cy="20" r="19" fill="url(#${id})"/>
+    <circle cx="20" cy="20" r="19" fill="none" stroke="#3d0a0c" stroke-width="1"/>
+    <circle cx="20" cy="20" r="16.5" fill="none" stroke="#fff" stroke-width="0.6" opacity="0.28"/>
+    <path d="M12.5 20.5 L17.5 25.5 L28 13" fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
 let shopState = { catalog: [], owned: [], equippedFrame: null, equippedBadge: null, coins: 0, tab: "frame", avatarChosenOnce: false };
 
 function renderTeamFlag(team, size) {
@@ -1974,7 +1991,7 @@ async function searchTeams() {
       <div class="team-search-row">
         <div style="display:flex; align-items:center; gap:10px">
           ${renderTeamFlag(t, 34)}
-          <div><div class="tn">${escapeHtml(t.name)}</div><div class="tm">${toFa(t.member_count)}/۱۰ عضو</div></div>
+          <div><div class="tn">${escapeHtml(t.name)} ${renderVerifiedBadge(t.is_verified, 12)}</div><div class="tm">${toFa(t.member_count)}/۱۰ عضو</div></div>
         </div>
         <button class="btn btn-secondary" style="width:auto;padding:9px 16px" onclick="joinTeamById('${t.id}')">پیوستن</button>
       </div>`).join("");
@@ -2007,6 +2024,7 @@ async function joinTeamByCode() {
 function renderTeamDashboard(data) {
   const { team, members } = data;
   document.getElementById("teamDashName").textContent = team.name;
+  document.getElementById("teamDashVerifiedBadge").innerHTML = renderVerifiedBadge(team.is_verified, 15);
   document.getElementById("teamDashDesc").textContent = team.description || "بدون توضیحات";
   document.getElementById("teamDashInviteCode").textContent = team.invite_code;
   document.getElementById("teamDashWeeklyXp").textContent = toFa(team.weekly_xp || 0);
@@ -2081,7 +2099,7 @@ function renderTeamDashboard(data) {
     return `<div class="member-row" onclick="openPublicProfile(${m.telegram_id})">
       <div class="mav${selfFrameClass}"><div class="avatar-bg" style="background-image:url('${avatarPath(m.avatar_index || 3)}')"></div></div>
       <div class="minfo">
-        <div class="mname">${escapeHtml(m.username)} ${selfBadgeHtml} ${badges}</div>
+        <div class="mname">${escapeHtml(m.username)} ${renderVerifiedBadge(m.is_verified, 13)} ${selfBadgeHtml} ${badges}</div>
         <div class="msub"><span>Lv ${toFa(m.level ?? 1)}</span><span>${m.current_rank || "سرباز صفر"}</span></div>
       </div>
       <div class="member-controls">
@@ -2370,7 +2388,7 @@ async function loadTeamLeaderboard(period) {
       return `<div class="lb-row ${medalCls}">
         ${posHtml}
         ${renderTeamFlag(t, medalCls === "top1" ? 40 : 36)}
-        <div class="info"><div class="uname">${escapeHtml(t.name)}</div></div>
+        <div class="info"><div class="uname">${escapeHtml(t.name)} ${renderVerifiedBadge(t.is_verified, 13)}</div></div>
         <div class="uscore">${toFa(t.score)}</div>
       </div>`;
     }).join("");
@@ -2441,13 +2459,13 @@ function renderPodSection(data) {
         <div class="pod-vs-row">
           <div class="pod-team-block">
             ${renderTeamFlag(myTeamData?.team || {}, 40)}
-            <div class="pod-team-name">${escapeHtml(myTeamData?.team?.name || "یگان شما")}</div>
+            <div class="pod-team-name">${escapeHtml(myTeamData?.team?.name || "یگان شما")} ${renderVerifiedBadge(myTeamData?.team?.is_verified, 11)}</div>
             <div class="pod-score">${toFa(myScore)}</div>
           </div>
           <div class="pod-vs-label">در مقابل</div>
           <div class="pod-team-block">
             ${renderTeamFlag(oppTeam, 40)}
-            <div class="pod-team-name">${escapeHtml(oppTeam.name)}</div>
+            <div class="pod-team-name">${escapeHtml(oppTeam.name)} ${renderVerifiedBadge(oppTeam.is_verified, 11)}</div>
             <div class="pod-score">${toFa(oppScore)}</div>
           </div>
         </div>
@@ -2466,7 +2484,7 @@ function renderPodSection(data) {
       const resultText = s.status === "completed" ? podResultLabel(s.result) : "برنامه‌ریزی‌شده";
       return `<div class="pod-schedule-row">
         <div class="psd">${s.match_date}</div>
-        <div class="pso">${renderTeamFlag(opp, 26)}<span>${escapeHtml(opp.name)}</span></div>
+        <div class="pso">${renderTeamFlag(opp, 26)}<span>${escapeHtml(opp.name)} ${renderVerifiedBadge(opp.is_verified, 11)}</span></div>
         <div class="psr ${resultCls}">${resultText}</div>
       </div>`;
     }).join("");
@@ -2483,7 +2501,7 @@ function renderPodSection(data) {
       return `<div class="pod-standing-row">
         <div class="psn">${toFa(idx + 1)}</div>
         ${renderTeamFlag(t, 28)}
-        <div class="pst">${escapeHtml(t.name)}</div>
+        <div class="pst">${escapeHtml(t.name)} ${renderVerifiedBadge(t.is_verified, 11)}</div>
         <div class="pss">${toFa(s.wins)}ب ${toFa(s.ties)}م ${toFa(s.losses)}ش</div>
       </div>`;
     }).join("");
