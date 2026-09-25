@@ -635,6 +635,7 @@
     </div>
     <button class="btn btn-primary" style="margin-top:22px" onclick="openChannel()">عضویت در کانال</button>
     <button class="btn btn-secondary" style="margin-top:10px" onclick="recheckMembership()">بررسی مجدد عضویت</button>
+    <div id="fjDebug" style="margin-top:16px;font-size:10px;line-height:1.6;color:#666;direction:ltr;text-align:center;word-break:break-all;"></div>
   </div>
 
   <!-- 3. COOLDOWN -->
@@ -1287,8 +1288,17 @@ function rankImgPath(rankName) {
   return `assets/ranks/rank-${num}.png`;
 }
 
+function fillDebug() {
+  const el = document.getElementById("fjDebug");
+  if (!el) return;
+  el.textContent =
+    `DEBUG | USER_ID: ${USER_ID} | has_tgUser: ${!!tgUser} | tg_version: ${tg?.version || "n/a"} | ` +
+    `platform: ${tg?.platform || "n/a"} | initData_len: ${tg?.initData?.length || 0}`;
+}
+
 async function init() {
   showScreen("loading");
+  fillDebug();
   try {
     const membership = await callFunction("check-membership", { telegram_id: USER_ID });
     if (!membership.is_member) {
@@ -1304,6 +1314,7 @@ async function init() {
 
 async function recheckMembership() {
   showScreen("loading");
+  fillDebug();
   try {
     const membership = await callFunction("check-membership", { telegram_id: USER_ID });
     if (membership.is_member) {
